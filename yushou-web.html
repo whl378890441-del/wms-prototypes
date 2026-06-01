@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>预收单管理系统 - 重构版</title>
+  
+  <!-- 1. React 18 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <!-- 2. ReactDOM 18 -->
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- 3. Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- 4. Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 5. Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style>
+    /* 保留所有原始 CSS */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    body { margin: 0; padding: 0; background-color: #f0f2f5; }
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+    @keyframes prdPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(255, 149, 0, 0); }
+    }
+    .rich-text-content ul { list-style-type: disc; padding-left: 1.2rem; margin: 0.3em 0; }
+    .rich-text-content ol { list-style-type: decimal; padding-left: 1.2rem; margin: 0.3em 0; }
+    .rich-text-content b, .rich-text-content strong { font-weight: 700; color: #111; }
+    .rich-text-content i, .rich-text-content em { font-style: italic; }
+    .rich-text-content p { margin-bottom: 0.3em; }
+    .rich-text-content table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+    .rich-text-content th, .rich-text-content td { border: 1px solid #D1D5DB; padding: 6px 8px; text-align: left; min-width: 50px; word-break: break-all; }
+    .rich-text-content th { background-color: #F3F4F6; font-weight: 600; }
+    .prd-badge { animation: prdPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    
+    body.prd-resizing { cursor: col-resize !important; user-select: none; }
+    body.prd-resizing * { cursor: col-resize !important; }
+
+    .badge-pill-scroll { overflow-x: auto; flex: 1; display: flex; gap: 6px; scrollbar-width: none; -ms-overflow-style: none; }
+    .badge-pill-scroll::-webkit-scrollbar { display: none; }
+    .badge-arrow { width: 20px; height: 24px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 14px; flex-shrink: 0; cursor: pointer; transition: color 0.15s; }
+    .badge-arrow:hover { color: #374151; }
+    .badge-arrow.hidden { visibility: hidden; pointer-events: none; }
+    .badge-pill { padding: 4px 12px; border-radius: 16px; font-size: 12px; white-space: nowrap; flex-shrink: 0; cursor: pointer; background: #f3f4f6; color: #374151; border: 1.5px solid transparent; transition: all 0.15s; }
+    .badge-pill:hover { background: #e5e7eb; }
+    .badge-pill.active { background: #fa8c16; color: #fff; border-color: #fa8c16; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="prd-embedded-data">
+{
+  "list-table": {
+    "order": 1,
+    "title": "列表页 - 表格展示",
+    "content": "<h3>业务规则</h3><ul><li><b>展示形式：</b>表格形式展示预收单列表数据</li><li><b>排序规则：</b>按单据创建顺序排列</li></ul><h3>表头字段说明</h3><table><thead><tr><th>字段</th><th>展示规则</th><th>说明</th></tr></thead><tbody><tr><td>序号</td><td>自动递增</td><td>当前页行号</td></tr><tr><td>单据编号</td><td>蓝色可点击</td><td>根据详情页字段展示</td></tr><tr><td>手工单号</td><td>文本展示</td><td>无则显示空</td></tr><tr><td>单据类型</td><td>文本展示</td><td>根据详情页字段展示</td></tr><tr><td>关联单号</td><td>文本展示</td><td>根据详情页字段展示</td></tr><tr><td>供应商</td><td>编号-名称格式</td><td>无则显示「-」</td></tr><tr><td>发货渠道</td><td>编号-名称格式</td><td>无则显示「-」</td></tr><tr><td>收货渠道</td><td>编号-名称格式</td><td>无则显示「-」</td></tr><tr><td>箱数</td><td>整数展示</td><td>根据详情页字段展示</td></tr><tr><td>备注</td><td>文本展示</td><td>无则显示空</td></tr><tr><td>操作</td><td>「详情」按钮</td><td>点击进入详情页</td></tr></tbody></table><p><b>注：</b>字段取值逻辑详见规则④（详情页表单字段）。</p>"
+  },
+  "list-toolbar": {
+    "order": 2,
+    "title": "列表页 - 新增预收单入口",
+    "content": "<h3>业务规则</h3><ul><li><b>入口位置：</b>列表页工具栏「+ 新建」按钮</li><li><b>点击行为：</b>切换至<b>「详情」Tab</b>，进入新建预收单页面（编辑态）</li></ul>"
+  },
+  "list-filter": {
+    "order": 3,
+    "title": "列表页 - 筛选功能",
+    "content": "<h3>业务规则</h3><ul><li><b>筛选区域：</b>列表页顶部查询条件区</li><li><b>筛选字段：</b><ul><li>单据编号（文本输入，模糊搜索）</li><li>手工单号（文本输入，模糊搜索）</li><li>单据类型（高筛弹窗，单选）</li><li>供应商（高筛弹窗，单选）</li><li>关联单号（文本输入，模糊搜索）</li><li>发货渠道（高筛弹窗，单选）</li><li>收货渠道（高筛弹窗，单选）</li></ul></li></ul>"
+  },
+  "detail-form": {
+    "order": 4,
+    "title": "详情页 - 表单字段与交互",
+    "content": "<h3>表单字段说明</h3><table><thead><tr><th>字段</th><th>字段类型</th><th>必填</th><th>默认值</th><th>可编辑</th><th>业务规则</th><th>交互逻辑</th><th>取值来源</th></tr></thead><tbody><tr><td>单据编号</td><td>文本</td><td>否</td><td>系统自动生成</td><td><b>否</b></td><td>WEB端自动生成，不可修改</td><td>只读展示</td><td>系统生成</td></tr><tr><td>手工单号</td><td>文本</td><td>否</td><td>空</td><td>是</td><td>用户手动输入的单号</td><td>文本输入</td><td>用户输入</td></tr><tr><td>单据日期</td><td>日期</td><td><b>是</b></td><td>系统当前日期</td><td>是</td><td>格式YYYY-MM-DD</td><td>日期选择器</td><td>系统当前日期</td></tr><tr><td>单据类型</td><td>枚举</td><td><b>是</b></td><td>采购到货通知单</td><td>是</td><td>决定下方展示供应商或发货渠道</td><td>下拉选择，切换时清空关联单号及带出字段</td><td>用户选择</td></tr><tr><td>关联单号</td><td>文本</td><td><b>是</b></td><td>空</td><td>是</td><td>高筛弹窗选择；根据单据类型过滤可选项；选择后自动带出供应商/发货渠道/收货渠道；切换单据类型清空已选</td><td>高筛弹窗选择</td><td>已审核的单据，且处理状态为未入库/已发货</td></tr><tr><td>供应商</td><td>高筛</td><td><b>是</b></td><td>关联单带出</td><td><b>否</b></td><td>仅采购到货通知单时展示；关联单号带出，不可编辑</td><td>只读展示，编号-名称格式</td><td>关联单号对应的供应商主数据</td></tr><tr><td>发货渠道</td><td>高筛<br></td><td><b>是</b></td><td>关联单带出</td><td><b>否</b></td><td>仅发货单时展示；关联单号带出，不可编辑</td><td>只读展示，编号-名称格式</td><td>关联单号对应的发货渠道主数据</td></tr><tr><td>收货渠道</td><td>高筛<br></td><td><b>是</b></td><td>关联单带出</td><td><b>否</b></td><td>关联单号带出，不可编辑</td><td>只读展示，编号-名称格式</td><td>关联单号对应的收货渠道主数据</td></tr><tr><td>箱数</td><td>整数</td><td><b>是</b></td><td>空</td><td>是</td><td>整数输入，≥1</td><td>数字输入框</td><td>用户输入</td></tr><tr><td>操作人</td><td>高筛<br></td><td>否</td><td>当前登录用户</td><td>是</td><td>默认当前登录用户；可切换其他有权限操作人</td><td>高筛选择</td><td>系统有权限用户列表</td></tr><tr><td>备注</td><td>文本</td><td>否</td><td>空</td><td>是</td><td>文本输入，无字数限制</td><td>文本输入框</td><td>用户输入</td></tr></tbody></table><h3><br></h3><h3>提交校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>单据日期</td><td>不能为空</td><td>「请选择单据日期」</td></tr><tr><td>单据类型</td><td>不能为空</td><td>「请选择单据类型」</td></tr><tr><td>关联单号</td><td>不能为空</td><td>「关联单号必填」</td></tr><tr><td>供应商/发货渠道</td><td>关联单带出，不能为空</td><td>「请选择有效的关联单号」</td></tr><tr><td>收货渠道</td><td>关联单带出，不能为空</td><td>「请选择有效的关联单号」</td></tr><tr><td>箱数</td><td>必须≥1的整数</td><td>「请输入有效箱数」</td></tr></tbody></table><h3><br></h3><h3>工具栏操作</h3><table><thead><tr><th>操作按钮</th><th>点击行为</th></tr></thead><tbody><tr><td>新建</td><td>切换至新建模式，清空表单</td></tr><tr><td>删除</td><td>删除当前单据（校验逻辑见规则⑥）</td></tr><tr><td>取消</td><td>放弃修改，返回列表Tab</td></tr><tr><td>保存</td><td>校验通过后保存表单数据（校验逻辑见规则⑥）</td></tr><tr><td>打印</td><td>触发打印功能</td></tr></tbody></table>"
+  },
+  "detail-attachments": {
+    "order": 5,
+    "title": "详情页 - 附件上传",
+    "content": "<h3>业务规则</h3><ul><li><b>入口位置：</b>详情页底部「附件」区域</li><li><b>上传方式：</b>点击「+」热区弹出文件选择器，支持多选图片文件</li></ul><h3>交互逻辑</h3><ul><li><b>已上传附件展示：</b>以缩略图网格形式展示</li><li><b>预览：</b>鼠标悬停缩略图显示删除按钮</li><li><b>删除：</b>点击缩略图右上角✕按钮即可移除</li><li><b>上传热区：</b>点击「+」按钮选择本地图片文件上传</li></ul><h3>取值逻辑</h3><table><thead><tr><th>字段</th><th>取值来源</th><th>说明</th></tr></thead><tbody><tr><td>附件列表</td><td>预收单.附件列表</td><td>图片URL数组，新建时为空</td></tr></tbody></table>"
+  },
+  "submit-delete-validation": {
+    "order": 6,
+    "title": "预收单 - 提交与删除校验逻辑",
+    "content": "<h3>字段说明</h3><p>上级单据（采购到货通知单/发货单）新增字段：</p><ul><li><b>是否预收：</b>布尔字段，默认值为「否」</li></ul><h3><br></h3><h3>保存校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>是否预收</td><td>关联上级单据的「是否预收」字段值为「是」</td><td>「该单据已被其他预收单关联，不允许重复预收」</td></tr></tbody></table><h3>保存成功后回写</h3><ul><li><b>触发时机：</b>预收单保存成功</li><li><b>回写动作：</b>将关联上级单据的「是否预收」字段从「否」修改为「是」</li></ul><h3><br></h3><h3>删除校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>处理状态+审核状态</td><td>关联单据的「处理状态」为「已入库」或「已收货」<b>且</b>关联单据已审核</td><td>「该单据已入库/已收货且已审核，不允许删除预收单」</td></tr></tbody></table><ul><li><b>允许删除条件：</b>其他情况均允许删除</li></ul><h3><br></h3><h3>删除成功后回写</h3><ul><li><b>触发时机：</b>预收单删除成功</li><li><b>回写动作：</b>将关联上级单据的「是否预收」字段回写为「否」</li></ul>"
+  }
+}
+</script>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
+
+    // --- 保留所有内联 SVG 图标组件 ---
+    const IconBase = ({ children, size=24, className="" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+        {children}
+      </svg>
+    );
+
+    const Search = (p) => <IconBase {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></IconBase>;
+    const Maximize = (p) => <IconBase {...p}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></IconBase>;
+    const Globe = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></IconBase>;
+    const HelpCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></IconBase>;
+    const Bell = (p) => <IconBase {...p}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></IconBase>;
+    const User = (p) => <IconBase {...p}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>;
+    const ChevronDown = (p) => <IconBase {...p}><polyline points="6 9 12 15 18 9"/></IconBase>;
+    const ChevronRight = (p) => <IconBase {...p}><polyline points="9 18 15 12 9 6"/></IconBase>;
+    const ChevronLeft = (p) => <IconBase {...p}><polyline points="15 18 9 12 15 6"/></IconBase>;
+    const LayoutDashboard = (p) => <IconBase {...p}><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></IconBase>;
+    const MenuIcon = (p) => <IconBase {...p}><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></IconBase>;
+    const X = (p) => <IconBase {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></IconBase>;
+    const Calendar = (p) => <IconBase {...p}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></IconBase>;
+    const List = (p) => <IconBase {...p}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></IconBase>;
+    const RefreshCw = (p) => <IconBase {...p}><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></IconBase>;
+    const AlertCircle = (p) => <IconBase {...p}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></IconBase>;
+    const Plus = (p) => <IconBase {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></IconBase>;
+    const ImageIcon = (p) => <IconBase {...p}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></IconBase>;
+    const Printer = (p) => <IconBase {...p}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></IconBase>;
+
+    // --- 模拟数据字典 ---
+    const MOCK_LIST_DATA = [
+      { id: 1, danJu: '20260428-1', shouGong: 'SG001', danJuLeiXing: '采购到货通知单', relatedOrder: 'CO260414000001', supplierNo: 'S1001', supplierName: '立讯精密', faHuoQuDaoNo: '', faHuoQuDaoName: '', shouHuoQuDaoNo: 'M001', shouHuoQuDaoName: '深圳南山旗舰店', boxes: 10, hasAttachment: '存在', remark: '' },
+      { id: 2, danJu: '20260428-2', shouGong: '', danJuLeiXing: '发货单', relatedOrder: 'DO2604200001', supplierNo: '', supplierName: '', faHuoQuDaoNo: 'W001', faHuoQuDaoName: '华南总仓', shouHuoQuDaoNo: 'M002', shouHuoQuDaoName: '北京王府井店', boxes: 5, hasAttachment: '-', remark: '加急件' },
+      { id: 3, danJu: '20260428-3', shouGong: '', danJuLeiXing: '采购到货通知单', relatedOrder: 'CO260414000003', supplierNo: 'S1003', supplierName: '蓝思科技', faHuoQuDaoNo: '', faHuoQuDaoName: '', shouHuoQuDaoNo: 'M003', shouHuoQuDaoName: '上海浦东店', boxes: 20, hasAttachment: '存在', remark: '' },
+      { id: 4, danJu: '20260428-4', shouGong: '', danJuLeiXing: '采购到货通知单', relatedOrder: 'CO260414000004', supplierNo: 'S1001', supplierName: '立讯精密', faHuoQuDaoNo: '', faHuoQuDaoName: '', shouHuoQuDaoNo: 'M001', shouHuoQuDaoName: '深圳南山旗舰店', boxes: 15, hasAttachment: '存在', remark: '' },
+      { id: 5, danJu: '20260428-5', shouGong: 'SG0005', danJuLeiXing: '发货单', relatedOrder: 'DO2604210005', supplierNo: '', supplierName: '', faHuoQuDaoNo: 'W002', faHuoQuDaoName: '华东大仓', shouHuoQuDaoNo: 'M004', shouHuoQuDaoName: '广州天河店', boxes: 8, hasAttachment: '-', remark: '' },
+      { id: 6, danJu: '20260428-6', shouGong: '', danJuLeiXing: '采购到货通知单', relatedOrder: 'CO260414000006', supplierNo: 'S1005', supplierName: '舜宇光学', faHuoQuDaoNo: '', faHuoQuDaoName: '', shouHuoQuDaoNo: 'M005', shouHuoQuDaoName: '成都春熙路店', boxes: 30, hasAttachment: '存在', remark: '优先处理' },
+      { id: 7, danJu: '20260428-7', shouGong: '', danJuLeiXing: '发货单', relatedOrder: 'DO2604220007', supplierNo: '', supplierName: '', faHuoQuDaoNo: 'W001', faHuoQuDaoName: '华南总仓', shouHuoQuDaoNo: 'M002', shouHuoQuDaoName: '北京王府井店', boxes: 12, hasAttachment: '存在', remark: '' },
+      { id: 8, danJu: '20260428-8', shouGong: '', danJuLeiXing: '采购到货通知单', relatedOrder: 'CO260414000008', supplierNo: 'S1001', supplierName: '立讯精密', faHuoQuDaoNo: '', faHuoQuDaoName: '', shouHuoQuDaoNo: 'M001', shouHuoQuDaoName: '深圳南山旗舰店', boxes: 25, hasAttachment: '-', remark: '' },
+    ];
+
+    const ASSOCIATED_ORDERS = {
+      'GL20231001001': { gongYingShangBianHao: 'S1001', gongYingShangJianCheng: '立讯精密', faHuoQuDaoBianHao: '', faHuoQuDaoJianCheng: '', shouHuoQuDaoBianHao: 'M001', shouHuoQuDaoJianCheng: '深圳南山旗舰店' },
+      'GL20231001002': { gongYingShangBianHao: '', gongYingShangJianCheng: '', faHuoQuDaoBianHao: 'W001', faHuoQuDaoJianCheng: '华南总仓', shouHuoQuDaoBianHao: 'M002', shouHuoQuDaoJianCheng: '北京王府井店' },
+      'GL20231001003': { gongYingShangBianHao: 'S1003', gongYingShangJianCheng: '蓝思科技', faHuoQuDaoBianHao: '', faHuoQuDaoJianCheng: '', shouHuoQuDaoBianHao: 'M003', shouHuoQuDaoJianCheng: '上海浦东店' }
+    };
+
+    // --- 区块提取：列表视图 ---
+    function ListView({ setActiveTab }) {
+      return (
+        <div className="flex-1 flex flex-col overflow-hidden bg-white">
+          {/* 查询条件区 */}
+          <PrdWrapper id="list-filter">
+            <div className="p-3 border-b border-gray-100 flex flex-col gap-2 shrink-0 relative z-10">
+              <div className="flex flex-wrap gap-2">
+                <ListFilterInput placeholder="单据编号" isSearch />
+                <ListFilterInput placeholder="手工单号" isSearch />
+                <ListSelectFilter label="单据类型" options={['全部', '采购到货通知单', '发货单']} />
+                <ListFilterInput placeholder="供应商" isSearch />
+                <ListFilterInput placeholder="关联单号" isSearch />
+                <ListFilterInput placeholder="发货渠道" isSearch />
+              </div>
+            </div>
+          </PrdWrapper>
+
+          {/* 工具栏区 */}
+          <PrdWrapper id="list-toolbar">
+            <div className="flex justify-between items-center p-3 border-b border-gray-100 shrink-0 relative z-10">
+              <div className="flex space-x-2">
+                <button className="h-[28px] px-4 bg-[#1677ff] text-white text-[13px] rounded-sm hover:bg-blue-600">查询</button>
+                <button className="h-[28px] px-4 border border-gray-300 bg-white text-gray-700 text-[13px] rounded-sm hover:bg-gray-50">重置</button>
+                <button 
+                  onClick={() => setActiveTab('详情')}
+                  className="h-[28px] px-4 border border-blue-300 bg-white text-[#1677ff] text-[13px] rounded-sm flex items-center hover:bg-blue-50"
+                >
+                  <span className="mr-1 font-bold">+</span> 新建
+                </button>
+                <button className="h-[28px] px-4 border border-red-300 bg-white text-red-500 text-[13px] rounded-sm hover:bg-red-50">删除</button>
+                <button className="h-[28px] px-4 border border-gray-300 bg-white text-gray-700 text-[13px] rounded-sm hover:bg-gray-50">批量打印</button>
+              </div>
+              <div className="flex items-center space-x-4 text-gray-600">
+                <span className="flex items-center cursor-pointer hover:text-blue-600 text-[13px]">
+                  视图 <span className="mx-1 text-gray-800">默认视图</span> <ChevronDown size={14} />
+                </span>
+                <List size={18} className="cursor-pointer hover:text-blue-600" />
+              </div>
+            </div>
+          </PrdWrapper>
+
+          {/* 数据表格区 */}
+          <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-hidden relative">
+              <PrdWrapper id="list-table" className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-auto relative z-10">
+                  <table className="w-full text-left border-collapse min-w-[1500px]">
+                    <thead className="bg-[#f8fafc] sticky top-0 z-10">
+                      <tr className="text-gray-600 text-[13px]">
+                        <th className="p-2 border-r border-b border-gray-200 w-10 text-center whitespace-nowrap">
+                          <input type="checkbox" className="rounded border-gray-300 cursor-pointer" />
+                        </th>
+                        <th className="p-2 border-r border-b border-gray-200 min-w-[60px] whitespace-nowrap text-center">序号</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[140px]">单据编号</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[100px]">手工单号</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[120px]">单据类型</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[140px]">关联单号</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[180px]">供应商</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[180px]">发货渠道</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[180px]">收货渠道</th>
+                        <th className="p-2 font-medium border-r border-b border-gray-200 min-w-[60px]">箱数</th>
+                        <th className="p-2 font-medium border-b border-gray-200 min-w-[120px]">备注</th>
+                        <th className="p-2 font-medium border-l border-b border-gray-200 min-w-[80px] whitespace-nowrap sticky right-0 bg-[#f8fafc] z-20 text-center shadow-[-2px_0_5px_rgba(0,0,0,0.05)]">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {MOCK_LIST_DATA.map((row, idx) => (
+                        <tr 
+                          key={row.id} 
+                          onDoubleClick={() => setActiveTab('详情')}
+                          className="bg-white hover:bg-blue-50 border-b border-gray-100 transition-colors cursor-pointer group"
+                        >
+                          <td className="p-2 border-r border-gray-100 text-center whitespace-nowrap">
+                            <input type="checkbox" className="rounded border-gray-300 cursor-pointer" onClick={(e) => e.stopPropagation()} />
+                          </td>
+                          <td className="p-2 border-r border-gray-100 text-center text-gray-500 whitespace-nowrap">{idx + 1}</td>
+                          <td className="p-2 border-r border-gray-100 text-blue-600 hover:underline">{row.danJu}</td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">{row.shouGong}</td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">{row.danJuLeiXing}</td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">{row.relatedOrder}</td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">
+                            {row.supplierNo ? `${row.supplierNo}-${row.supplierName}` : '-'}
+                          </td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">
+                            {row.faHuoQuDaoNo ? `${row.faHuoQuDaoNo}-${row.faHuoQuDaoName}` : '-'}
+                          </td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">
+                            {row.shouHuoQuDaoNo ? `${row.shouHuoQuDaoNo}-${row.shouHuoQuDaoName}` : '-'}
+                          </td>
+                          <td className="p-2 border-r border-gray-100 text-gray-700">{row.boxes}</td>
+                          <td className="p-2 text-gray-500">{row.remark}</td>
+                          <td className="p-2 border-l border-gray-100 sticky right-0 bg-white group-hover:bg-blue-50 z-10 text-center shadow-[-2px_0_5px_rgba(0,0,0,0.05)] transition-colors whitespace-nowrap">
+                            <button 
+                              className="text-[#1677ff] hover:text-blue-800 font-medium"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTab('详情');
+                              }}
+                            >
+                              详情
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </PrdWrapper>
+              
+              {/* 列表底部合计与分页 */}
+              <PrdWrapper id="list-pagination">
+                <div className="bg-white border-t border-gray-200 flex flex-col shrink-0 relative z-10">
+                  <div className="flex items-center justify-between px-4 h-10 text-[12px] text-gray-600">
+                    <span>共 {MOCK_LIST_DATA.length} 条记录, 1/1</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <button className="w-6 h-6 border border-gray-200 rounded flex items-center justify-center text-gray-400 bg-gray-50 cursor-not-allowed">{'<'}</button>
+                        <button className="w-6 h-6 border border-[#1677ff] rounded flex items-center justify-center text-[#1677ff] bg-blue-50">1</button>
+                        <button className="w-6 h-6 border border-gray-200 rounded flex items-center justify-center text-gray-400 bg-gray-50 cursor-not-allowed">{'>'}</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </PrdWrapper>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 区块提取：详情视图 ---
+    function DetailView({ formData, setFormData, handleGuanLianDanHaoChange, setShowPrintModal }) {
+      return (
+        <div className="flex-1 flex flex-col overflow-auto bg-white relative">
+          {/* Toolbar */}
+          <PrdWrapper id="detail-toolbar">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 shrink-0 sticky top-0 bg-white z-10 shadow-sm relative z-10">
+              <div className="flex items-center space-x-3 text-gray-600">
+                <button className="flex items-center px-3 py-1 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-sm text-xs">
+                  <Plus size={12} className="mr-1" /> 新建
+                </button>
+                <button className="hover:text-gray-800 px-2 text-xs text-gray-400 cursor-not-allowed">修改</button>
+                <button className="text-red-500 hover:text-red-600 px-2 text-xs">删除</button>
+                <button className="hover:text-gray-800 px-2 text-xs text-gray-700">取消</button>
+                <button className="text-[#1677ff] font-medium hover:text-blue-700 px-2 text-xs">保存</button>
+                
+                <button 
+                  onClick={() => setShowPrintModal(true)} 
+                  className="hover:text-gray-800 px-2 text-xs text-gray-700 cursor-pointer"
+                >
+                  打印
+                </button>
+                
+                <span className="text-gray-300 px-1">|</span>
+                <button className="hover:text-gray-800 px-2 text-xs text-gray-400 cursor-not-allowed">上一条</button>
+                <button className="hover:text-gray-800 px-2 text-xs text-gray-400 cursor-not-allowed">下一条</button>
+              </div>
+            </div>
+          </PrdWrapper>
+
+          {/* Form Section */}
+          <div className="p-6">
+            <PrdWrapper id="detail-form">
+              <div className="grid grid-cols-4 gap-x-8 gap-y-5 relative z-10">
+                {/* 第一行 */}
+                <FormInput label="单据编号" value={formData.danJu} readOnly required />
+                <FormInput label="手工单号" placeholder="请输入" value={formData.shouGong} onChange={(e) => setFormData({...formData, shouGong: e.target.value})} />
+                <FormInput label="单据日期" value={formData.danJuRiQi} onChange={(e) => setFormData({...formData, danJuRiQi: e.target.value})} icon={<Calendar size={14} className="text-gray-400"/>} required />
+                <FormSelect label="单据类型" options={['采购到货通知单', '发货单']} value={formData.danJuLeiXing} onChange={(e) => setFormData({...formData, danJuLeiXing: e.target.value, gongYingShang: '', faHuoQuDao: '', shouHuoQuDao: '', guanLianDanHao: ''})} required />
+
+                {/* 第二行 */}
+                <FormSelect 
+                  label="关联单号" 
+                  options={Object.keys(ASSOCIATED_ORDERS)} 
+                  value={formData.guanLianDanHao} 
+                  onChange={handleGuanLianDanHaoChange} 
+                  required
+                />
+                
+                {formData.danJuLeiXing === '发货单' ? (
+                  <FormInputWithBtn label="发货渠道" placeholder="关联带出" value={formData.faHuoQuDao} required />
+                ) : (
+                  <FormInputWithBtn label="供应商" placeholder="关联带出" value={formData.gongYingShang} required />
+                )}
+                
+                <FormInputWithBtn label="收货渠道" placeholder="关联带出" value={formData.shouHuoQuDao} required />
+                <FormInput label="箱数" placeholder="请输入" value={formData.xiangShu} onChange={(e) => setFormData({...formData, xiangShu: e.target.value})} required />
+
+                {/* 第三行：操作人 + 备注 */}
+                <FormSelect label="操作人" options={['admin', '张三', '李四', '王五']} value={formData.caoZuoRen} onChange={(e) => setFormData({...formData, caoZuoRen: e.target.value})} />
+                <div className="col-span-3">
+                    <FormInput label="备注" placeholder="请输入" value={formData.beiZhu} onChange={(e) => setFormData({...formData, beiZhu: e.target.value})} />
+                </div>
+              </div>
+            </PrdWrapper>
+
+            {/* 附件区域 */}
+            <PrdWrapper id="detail-attachments">
+              <div className="mt-8 border-t border-gray-100 pt-6 relative z-10">
+                <div className="flex items-center text-blue-500 font-medium text-[14px] mb-6">
+                    <div className="w-[3px] h-[14px] bg-blue-500 mr-2"></div> 附件
+                </div>
+                
+                <div className="flex space-x-24 px-2">
+                    <AttachmentUploader 
+                      title="上传附件" 
+                      initialImages={[
+                        { id: 'mock1', src: 'https://images.unsplash.com/photo-1568044852337-9bcc3378fc3c?auto=format&fit=crop&w=150&h=150&q=80' },
+                        { id: 'mock2', src: 'https://images.unsplash.com/photo-1618044733300-9472054094ee?auto=format&fit=crop&w=150&h=150&q=80' }
+                      ]} 
+                    />
+                </div>
+              </div>
+            </PrdWrapper>
+          </div>
+        </div>
+      );
+    }
+
+    // --- 2.1 初始 PRD 文档数据（从 JSON 嵌入区读取） ---
+    const INITIAL_PRD_DOCS = JSON.parse(document.getElementById('prd-embedded-data')?.textContent || '{}');
+
+    // --- 2.2 全局可拖拽 PRD 悬浮球 ---
+    const DraggablePRDMenu = ({ isPrdMode, setIsPrdMode, importPrdData, exportPrdData, embedSave, showToast }) => {
+      const [position, setPosition] = useState({ x: -1000, y: -1000 });
+      const [isReady, setIsReady] = useState(false);
+      const [isDragging, setIsDragging] = useState(false);
+      const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, hasMoved: false });
+
+      useEffect(() => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        setPosition({ x: Math.max(10, w - 75), y: Math.max(10, h - 150) });
+        setIsReady(true);
+      }, []);
+
+      const handlePointerDown = (e) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y, hasMoved: false };
+      };
+
+      const handlePointerMove = (e) => {
+        if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+        const dx = e.clientX - dragRef.current.startX;
+        const dy = e.clientY - dragRef.current.startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          dragRef.current.hasMoved = true;
+          if (!isDragging) setIsDragging(true);
+        }
+        if (dragRef.current.hasMoved) {
+          let newX = dragRef.current.initX + dx;
+          let newY = dragRef.current.initY + dy;
+          newX = Math.max(0, Math.min(newX, window.innerWidth - 52));
+          newY = Math.max(0, Math.min(newY, window.innerHeight - 52));
+          setPosition({ x: newX, y: newY });
+        }
+      };
+
+      const handlePointerUp = (e) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        setTimeout(() => setIsDragging(false), 10);
+      };
+
+      const handleClick = (e) => {
+        if (dragRef.current.hasMoved) { e.stopPropagation(); e.preventDefault(); return; }
+        setIsPrdMode(!isPrdMode);
+        if (showToast) showToast(isPrdMode ? 'PRD 模式已关闭' : 'PRD 模式已开启', 'info');
+      };
+
+      useEffect(() => {
+        const handleResize = () => {
+          setPosition(prev => ({
+            x: Math.max(0, Math.min(prev.x, window.innerWidth - 52)),
+            y: Math.max(0, Math.min(prev.y, window.innerHeight - 52))
+          }));
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+      if (!isReady) return null;
+
+      return ReactDOM.createPortal(
+        <div className="fixed z-[9999] flex flex-col items-center gap-3 transition-opacity"
+          style={{ left: `${position.x}px`, top: `${position.y}px`, touchAction: 'none' }}>
+          <div className={`flex items-center justify-center w-[52px] h-[52px] bg-white rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border-2 ${isPrdMode ? 'border-[#FF9500]' : 'border-transparent'} cursor-pointer select-none transition-transform ${isDragging ? 'scale-95 opacity-90' : 'hover:scale-105'}`}
+            onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
+            onClick={handleClick} title={isPrdMode ? "关闭 PRD 模式" : "开启 PRD 模式"}>
+            <i className={`ph-fill ${isPrdMode ? 'ph-notebook text-[#FF9500]' : 'ph-notebook text-[#808592]'} text-[26px] pointer-events-none`}></i>
+          </div>
+          {isPrdMode && (
+            <div className="flex flex-col gap-2 fade-in" onPointerDown={e => e.stopPropagation()}>
+              <label className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#3C5BF2] hover:scale-105 transition-transform" title="导入 PRD 配置文件">
+                <i className="ph-fill ph-download-simple text-[20px]"></i>
+                <input type="file" accept=".json" className="hidden" onChange={importPrdData} />
+              </label>
+              <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#34C759] hover:scale-105 transition-transform" title="导出 PRD 配置文件" onClick={exportPrdData}>
+                <i className="ph-fill ph-upload-simple text-[20px]"></i>
+              </div>
+              <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#FF9500] hover:scale-105 transition-transform" title="嵌入保存（直接覆盖原HTML文件）" onClick={embedSave}>
+                <i className="ph-fill ph-floppy-disk text-[20px]"></i>
+              </div>
+            </div>
+          )}
+        </div>,
+        document.body
+      );
+    };
+
+    // --- 2.3 富文本编辑器 ---
+    const RichTextEditor = ({ value, onChange, activeId }) => {
+      const editorRef = useRef(null);
+
+      useEffect(() => {
+        if (editorRef.current && editorRef.current.innerHTML !== value) {
+          editorRef.current.innerHTML = value || '';
+        }
+      }, [activeId]);
+
+      const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
+
+      const execCmd = (cmd, arg = null) => {
+        document.execCommand(cmd, false, arg);
+        editorRef.current.focus();
+        handleInput();
+      };
+
+      const insertTable = () => {
+        editorRef.current.focus();
+        document.execCommand('insertHTML', false,
+          `<table style="width: 100%; border-collapse: collapse;"><tbody>
+            <tr><td>表头1</td><td>表头2</td></tr>
+            <tr><td>内容</td><td>内容</td></tr>
+          </tbody></table><p><br></p>`);
+        handleInput();
+      };
+      const getCell = () => {
+        const sel = window.getSelection();
+        if (!sel.rangeCount) return null;
+        let n = sel.anchorNode;
+        while (n && n !== editorRef.current) { if (n.nodeType === 1 && (n.tagName === 'TD' || n.tagName === 'TH')) return n; n = n.parentNode; }
+        return null;
+      };
+      const insertRow = (above) => {
+        const cell = getCell(); if (!cell) return;
+        const row = cell.parentElement; const tbody = row.parentElement;
+        const newRow = row.cloneNode(true);
+        newRow.querySelectorAll('td,th').forEach(c => { c.innerHTML = ''; });
+        above ? tbody.insertBefore(newRow, row) : tbody.insertBefore(newRow, row.nextSibling);
+        handleInput();
+      };
+      const insertCol = (left) => {
+        const cell = getCell(); if (!cell) return;
+        const idx = Array.from(cell.parentElement.children).indexOf(cell);
+        cell.closest('table').querySelectorAll('tr').forEach(tr => {
+          const ref = tr.children[idx];
+          const newCell = ref ? ref.cloneNode(true) : document.createElement('td');
+          newCell.innerHTML = '';
+          left && ref ? tr.insertBefore(newCell, ref) : tr.appendChild(newCell);
+        });
+        handleInput();
+      };
+      const deleteRow = () => {
+        const cell = getCell(); if (!cell) return;
+        const row = cell.parentElement; const tbody = row.parentElement;
+        if (tbody.children.length <= 1) return;
+        row.remove(); handleInput();
+      };
+      const deleteCol = () => {
+        const cell = getCell(); if (!cell) return;
+        const idx = Array.from(cell.parentElement.children).indexOf(cell);
+        const table = cell.closest('table');
+        table.querySelectorAll('tr').forEach(tr => { if (tr.children[idx]) tr.children[idx].remove(); });
+        handleInput();
+      };
+
+      return (
+        <div className="border border-[#E8E8E8] rounded-lg overflow-hidden flex flex-col flex-1 bg-white shadow-sm">
+          <div className="flex items-center gap-1.5 p-1.5 border-b border-[#E8E8E8] bg-[#F9FAFB] flex-shrink-0 flex-wrap">
+            <button onClick={() => execCmd('bold')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="加粗"><b className="font-serif text-[15px]">B</b></button>
+            <button onClick={() => execCmd('italic')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="斜体"><i className="font-serif text-[15px]">I</i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={() => execCmd('insertUnorderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="无序列表"><i className="ph ph-list-bullets text-[16px]"></i></button>
+            <button onClick={() => execCmd('insertOrderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="有序列表"><i className="ph ph-list-numbers text-[16px]"></i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={insertTable} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="插入表格"><i className="ph ph-table text-[16px]"></i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={() => insertRow(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="上方插入行">+↑</button>
+            <button onClick={() => insertRow(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="下方插入行">+↓</button>
+            <button onClick={() => insertCol(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="左侧插入列">+←</button>
+            <button onClick={() => insertCol(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="右侧插入列">+→</button>
+            <button onClick={deleteRow} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前行">-行</button>
+            <button onClick={deleteCol} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前列">-列</button>
+          </div>
+          <div ref={editorRef} className="flex-1 p-3 outline-none overflow-y-auto text-[14px] leading-relaxed rich-text-content text-[#353D51]"
+            contentEditable onInput={handleInput} style={{ minHeight: '180px' }} />
+        </div>
+      );
+    };
+
+    // --- 2.4 PRD Context ---
+    const PrdContext = React.createContext();
+
+    // --- 2.5 PrdWrapper ---
+    const PrdBadge = ({ order, anchorRef }) => {
+      const [pos, setPos] = useState(null);
+
+      useEffect(() => {
+        const update = () => {
+          const el = anchorRef?.current;
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            setPos({ x: rect.right - 10, y: rect.top - 10 });
+          }
+        };
+        update();
+        const timer = setTimeout(update, 100);
+        window.addEventListener('scroll', update, true);
+        window.addEventListener('resize', update);
+        return () => { clearTimeout(timer); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update); };
+      }, [anchorRef]);
+
+      if (!pos) return null;
+      return ReactDOM.createPortal(
+        <div className="fixed w-[22px] h-[22px] bg-[#FF9500] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-[0_2px_6px_rgba(255,149,0,0.5)] z-[9998] pointer-events-none"
+          style={{ left: `${pos.x}px`, top: `${pos.y}px` }}>
+          {order}
+        </div>,
+        document.body
+      );
+    };
+
+    const PrdWrapper = ({ id, children, className = "" }) => {
+      const { prdDocs, isPrdMode, openPrdDrawer, drawerOpen } = React.useContext(PrdContext);
+      const anchorRef = useRef(null);
+      const docData = prdDocs[id];
+      const hasContent = docData && (docData.title || docData.content);
+
+      if (!isPrdMode) return <div className={className}>{children}</div>;
+
+      return (
+        <div ref={anchorRef} className={`relative ring-2 ring-transparent hover:ring-[#FF9500] hover:bg-[rgba(255,149,0,0.05)] transition-all rounded-lg cursor-pointer ${className}`}
+          onClickCapture={(e) => { e.preventDefault(); e.stopPropagation(); openPrdDrawer(id); }}>
+          <div className="absolute inset-0 z-50"></div>
+          {children}
+          {hasContent && !drawerOpen && <PrdBadge order={docData.order} anchorRef={anchorRef} />}
+        </div>
+      );
+    };
+
+    const CIRCLED_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
+    const BadgePillBar = ({ badges, activeId, onSelect, scrollRef }) => {
+      const scrollContainerRef = useRef(null);
+      const [showLeft, setShowLeft] = useState(false);
+      const [showRight, setShowRight] = useState(false);
+
+      const checkOverflow = () => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+        setShowLeft(el.scrollLeft > 2);
+        setShowRight(el.scrollWidth > el.clientWidth && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+      };
+
+      useEffect(() => { checkOverflow(); }, [badges]);
+
+      const scroll = (dir) => {
+        const el = scrollContainerRef.current;
+        if (!el) return;
+        el.scrollBy({ left: dir * 120, behavior: 'smooth' });
+        setTimeout(checkOverflow, 200);
+      };
+
+      useEffect(() => { if (scrollRef) scrollRef.current = scrollContainerRef.current; }, []);
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px', background: '#fff', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }}>
+          <div className={`badge-arrow ${showLeft ? '' : 'hidden'}`} onClick={() => scroll(-1)}>◀</div>
+          <div ref={scrollContainerRef} className="badge-pill-scroll" onScroll={checkOverflow}>
+            {badges.map(b => (
+              <div key={b.id} className={`badge-pill ${b.id === activeId ? 'active' : ''}`} onClick={() => onSelect(b.id)}>
+                {CIRCLED_NUMS[b.order - 1] || b.order}
+              </div>
+            ))}
+          </div>
+          <div className={`badge-arrow ${showRight ? '' : 'hidden'}`} onClick={() => scroll(1)}>▶</div>
+        </div>
+      );
+    };
+
+    // --- 主应用组件 ---
+    function App() {
+      const [activeTab, setActiveTab] = useState('列表');
+      const [showPrintModal, setShowPrintModal] = useState(false);
+
+      const today = useMemo(() => new Date(), []);
+      const formattedToday = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      
+      // 详情页表单状态
+      const [formData, setFormData] = useState({
+        danJu: '20260428-1',
+        shouGong: '',
+        danJuRiQi: formattedToday,
+        danJuLeiXing: '采购到货通知单',
+        guanLianDanHao: '',
+        gongYingShang: '',
+        faHuoQuDao: '',
+        shouHuoQuDao: '',
+        xiangShu: '',
+        caoZuoRen: 'admin',
+        beiZhu: ''
+      });
+
+      // --- PRD 模式状态 ---
+      const [isPrdMode, setIsPrdMode] = useState(false);
+      const [activePrdId, setActivePrdId] = useState(null);
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [prdDrawerWidth, setPrdDrawerWidth] = useState(560);
+      const [isResizing, setIsResizing] = useState(false);
+      const resizeRef = useRef(null);
+      const badgePillScrollRef = useRef(null);
+      const [editingDoc, setEditingDoc] = useState(null);
+      const [isEditing, setIsEditing] = useState(false);
+      const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+      const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+
+      const [prdDocs, setPrdDocs] = useState(INITIAL_PRD_DOCS);
+
+      // --- 简单的 Toast 提示函数 ---
+      const showToast = (msg, type = 'info') => {
+        let container = document.getElementById('prd-toast-container');
+        if (!container) {
+          container = document.createElement('div');
+          container.id = 'prd-toast-container';
+          container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col gap-2 pointer-events-none';
+          document.body.appendChild(container);
+        }
+        const toast = document.createElement('div');
+        const bgColors = {
+          success: 'bg-[#34C759]',
+          error: 'bg-[#FF3B30]',
+          info: 'bg-[#007AFF]'
+        };
+        toast.className = `px-4 py-2 text-white text-[13px] rounded-lg shadow-lg ${bgColors[type] || bgColors.info} transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-1.5`;
+        toast.innerHTML = `<i class="ph ph-info text-[16px]"></i><span>${msg}</span>`;
+        container.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.className = toast.className.replace('translate-y-[-20px] opacity-0', 'translate-y-0 opacity-100');
+        }, 10);
+        
+        setTimeout(() => {
+          toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-[-20px] opacity-0');
+          setTimeout(() => { toast.remove(); }, 300);
+        }, 2500);
+      };
+
+      // --- 导入/导出 ---
+      const exportPrdData = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prdDocs, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr; a.download = "预收单WEB_PRD数据.json";
+        document.body.appendChild(a); a.click(); a.remove();
+        showToast('已导出 PRD 数据文件', 'success');
+      };
+
+      const importPrdData = (event) => {
+        const file = event.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const imported = JSON.parse(e.target.result);
+            if (typeof imported === 'object' && imported !== null) {
+              setPrdDocs(imported);
+              showToast('PRD 数据导入成功', 'success');
+            } else { showToast('无效的数据文件格式', 'error'); }
+          } catch (error) { showToast('文件解析失败', 'error'); }
+        };
+        reader.readAsText(file); event.target.value = null;
+      };
+
+      // --- 抽屉操作（含编辑状态控制） ---
+      const openPrdDrawer = (id) => {
+        setActivePrdId(id); setIsConfirmingDelete(false);
+        if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
+        else {
+          const orders = Object.values(prdDocs).map(d => d.order);
+          setEditingDoc({ order: orders.length > 0 ? Math.max(...orders) + 1 : 1, title: '', content: '' });
+          setIsEditing(true);
+        }
+        setDrawerOpen(true);
+      };
+
+      const hasUnsavedChanges = () => {
+        if (!editingDoc) return false;
+        const existing = prdDocs[activePrdId];
+        return !existing || existing.title !== editingDoc.title || existing.content !== editingDoc.content;
+      };
+
+      const closePrdDrawer = () => {
+        if (isEditing && hasUnsavedChanges()) { setShowDiscardConfirm(true); return; }
+        setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const discardChanges = () => {
+        setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const executeDelete = () => {
+        let nd = { ...prdDocs }; delete nd[activePrdId];
+        let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
+        const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; });
+        setPrdDocs(rebuilt);
+        setIsConfirmingDelete(false); showToast('已删除该角标说明', 'success');
+        if (sorted.length > 0) {
+          const nextId = sorted[0];
+          setActivePrdId(nextId); setEditingDoc({ ...rebuilt[nextId] }); setIsEditing(false);
+        } else {
+          setDrawerOpen(false); setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+        }
+      };
+
+      const confirmPrdSave = () => {
+        let nd = { ...prdDocs };
+        if (!editingDoc.title?.trim() && !editingDoc.content?.trim()) {
+          delete nd[activePrdId];
+          let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
+          const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; }); nd = rebuilt;
+        } else { nd[activePrdId] = editingDoc; }
+        setPrdDocs(nd);
+        setDrawerOpen(false); showToast('保存成功，请点击悬浮球【嵌入保存】以固化到文件', 'success');
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const embedSave = async () => {
+        if (typeof window.showOpenFilePicker !== 'function') {
+          showToast('当前浏览器不支持直接覆盖，请使用导出功能', 'error');
+          return;
+        }
+        try {
+          const [fileHandle] = await window.showOpenFilePicker({
+            types: [{ description: 'HTML 文件', accept: { 'text/html': ['.html', '.htm'] } }],
+            multiple: false
+          });
+          const file = await fileHandle.getFile();
+          const fileContent = await file.text();
+          const jsonStartTag = '<script type="application/json" id="prd-embedded-data">';
+          const jsonEndTag = '<' + '/script>';
+          let jsonStart = -1;
+          let searchPos = 0;
+          while (true) {
+            const idx = fileContent.indexOf(jsonStartTag, searchPos);
+            if (idx === -1) break;
+            const afterTag = fileContent.substring(idx + jsonStartTag.length, idx + jsonStartTag.length + 10).trim();
+            if (afterTag.startsWith('{')) { jsonStart = idx; break; }
+            searchPos = idx + 1;
+          }
+          if (jsonStart === -1) { showToast('选中文件缺少 PRD 嵌入区', 'error'); return; }
+          const jsonEnd = fileContent.indexOf(jsonEndTag, jsonStart);
+          if (jsonEnd === -1) { showToast('PRD 嵌入区格式异常', 'error'); return; }
+          const jsonStr = JSON.stringify(prdDocs, null, 2);
+          const before = fileContent.substring(0, jsonStart + jsonStartTag.length);
+          const after = fileContent.substring(jsonEnd);
+          const newContent = before + '\n' + jsonStr + '\n' + after;
+          const writable = await fileHandle.createWritable();
+          await writable.write(newContent);
+          await writable.close();
+          showToast('原文件已成功覆盖更新', 'success');
+        } catch (error) {
+          if (error.name !== 'AbortError') {
+            showToast('嵌入保存失败: ' + error.message, 'error');
+            console.error('Save failed:', error);
+          }
+        }
+      };
+
+      const handlePrdChange = (field, value) => setEditingDoc(prev => ({ ...prev, [field]: value }));
+
+      const startResize = (e) => {
+        e.preventDefault();
+        setIsResizing(true);
+        document.body.classList.add('prd-resizing');
+        resizeRef.current = { startX: e.clientX, startWidth: prdDrawerWidth };
+        const onMove = (ev) => {
+          const dx = resizeRef.current.startX - ev.clientX;
+          const newWidth = Math.max(360, Math.min(900, resizeRef.current.startWidth + dx));
+          setPrdDrawerWidth(newWidth);
+        };
+        const onUp = () => {
+          setIsResizing(false);
+          document.body.classList.remove('prd-resizing');
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      };
+
+      // 方法提取 (关联单号选择后带出对应不可编辑字段)
+      const handleGuanLianDanHaoChange = (e) => {
+        const val = e.target.value;
+        if (ASSOCIATED_ORDERS[val]) {
+          const matched = ASSOCIATED_ORDERS[val];
+          setFormData(prev => ({
+            ...prev,
+            guanLianDanHao: val,
+            gongYingShang: matched.gongYingShangBianHao ? `${matched.gongYingShangBianHao}-${matched.gongYingShangJianCheng}` : '',
+            faHuoQuDao: matched.faHuoQuDaoBianHao ? `${matched.faHuoQuDaoBianHao}-${matched.faHuoQuDaoJianCheng}` : '',
+            shouHuoQuDao: matched.shouHuoQuDaoBianHao ? `${matched.shouHuoQuDaoBianHao}-${matched.shouHuoQuDaoJianCheng}` : ''
+          }));
+        } else {
+          setFormData(prev => ({
+            ...prev,
+            guanLianDanHao: val,
+            gongYingShang: '',
+            faHuoQuDao: '',
+            shouHuoQuDao: ''
+          }));
+        }
+      };
+
+      return (
+        <PrdContext.Provider value={{ prdDocs, isPrdMode, openPrdDrawer, drawerOpen }}>
+          <div className="flex flex-col h-screen w-full bg-[#f0f2f5] font-sans text-[13px] text-gray-800 overflow-hidden relative">
+            
+            {/* 悬浮球 */}
+            <DraggablePRDMenu
+              isPrdMode={isPrdMode} setIsPrdMode={setIsPrdMode}
+              importPrdData={importPrdData} exportPrdData={exportPrdData}
+              embedSave={embedSave} showToast={showToast}
+            />
+
+            {/* PRD 抽屉 Portal（放在所有业务 Modals 之前） */}
+            {ReactDOM.createPortal(
+              <>
+                <div className={`fixed inset-0 bg-black/40 z-[9990] transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                  onClick={closePrdDrawer}></div>
+                <div className={`fixed right-0 top-0 bottom-0 bg-[#F5F5F7] shadow-2xl z-[9995] transition-transform duration-300 transform flex flex-col ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                  style={{ width: `${prdDrawerWidth}px`, maxWidth: '90vw' }}>
+                  {/* 左侧拖拽拉伸手柄 */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-10 hover:bg-[#FF9500] hover:opacity-60 transition-opacity group"
+                    onMouseDown={startResize}>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-1 h-12 bg-gray-300 rounded-full group-hover:bg-[#FF9500] transition-colors"></div>
+                  </div>
+                  <div className="px-6 py-4 border-b border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
+                    <span className="text-[18px] font-semibold text-[#333]">产品规则说明</span>
+                    <div className="w-8 h-8 rounded-full bg-[#F5F5F7] flex items-center justify-center cursor-pointer active:scale-95 hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>
+                      <i className="ph ph-x text-[16px] text-[#666]"></i>
+                    </div>
+                  </div>
+                  <BadgePillBar
+                    badges={Object.keys(prdDocs).map(id => ({ id, order: prdDocs[id].order })).sort((a, b) => a.order - b.order)}
+                    activeId={activePrdId}
+                    onSelect={(id) => {
+                      setActivePrdId(id); setIsConfirmingDelete(false);
+                      if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
+                    }}
+                    scrollRef={badgePillScrollRef}
+                  />
+                  <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+                    {/* ===== 标题字段：只读态与编辑态样式必须一致 ===== */}
+                    <div className="flex flex-col gap-2 flex-shrink-0">
+                      <label className="text-[14px] font-medium text-[#808592] ml-1">功能模块名称</label>
+                      {isEditing ? (
+                        <input className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl outline-none focus:border-[#FF9500] focus:ring-2 focus:ring-[rgba(255,149,0,0.1)] bg-white font-medium text-[#353D51] transition-all"
+                          value={editingDoc?.title || ''} onChange={e => handlePrdChange('title', e.target.value)} />
+                      ) : (
+                        <div className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl bg-white font-medium text-[#353D51] min-h-[48px]">
+                          {editingDoc?.title || '未命名'}
+                        </div>
+                      )}
+                    </div>
+                    {/* ===== 内容区域：只读态与编辑态样式必须一致 ===== */}
+                    <div className="flex flex-col gap-2 flex-1 min-h-[300px]">
+                      <label className="text-[14px] font-medium text-[#808592] ml-1">交互与规则说明（富文本）</label>
+                      {isEditing ? (
+                        <RichTextEditor value={editingDoc?.content || ''} onChange={val => handlePrdChange('content', val)} activeId={activePrdId} />
+                      ) : (
+                        <div className="flex-1 p-3 border border-[#E8E8E8] rounded-lg bg-white shadow-sm overflow-y-auto rich-text-content text-[14px] leading-relaxed text-[#353D51]"
+                          dangerouslySetInnerHTML={{ __html: editingDoc?.content || '' }} />
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-6 py-4 border-t border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
+                    {isEditing ? (
+                       <>{/* 编辑态：左侧删除/放弃，右侧取消+保存 */}
+                         {showDiscardConfirm ? (
+                           <div className="flex items-center gap-2 fade-in">
+                             <span className="text-[13px] font-medium text-orange-500">有未保存的内容</span>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setShowDiscardConfirm(false)}>返回编辑</button>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={discardChanges}>放弃修改</button>
+                           </div>
+                         ) : isConfirmingDelete ? (
+                           <div className="flex items-center gap-2 fade-in">
+                             <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
+                           </div>
+                         ) : prdDocs[activePrdId] ? (
+                           <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
+                             <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
+                           </button>
+                         ) : <div></div>}
+                         <div className="flex items-center gap-3">
+                           <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>取消</button>
+                           <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={confirmPrdSave}>保存</button>
+                         </div>
+                       </>
+                    ) : (
+                       <>{/* 只读态：左侧删除，右侧关闭+编辑 */}
+                         {prdDocs[activePrdId] && !isConfirmingDelete ? (
+                           <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
+                             <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
+                           </button>
+                         ) : isConfirmingDelete ? (
+                           <div className="flex items-center gap-2 fade-in">
+                             <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
+                             <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
+                           </div>
+                         ) : <div></div>}
+                         <div className="flex items-center gap-3">
+                           <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>关闭</button>
+                           <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={() => setIsEditing(true)}>
+                             <i className="ph-fill ph-note-pencil mr-1 text-[16px]"></i>编辑
+                           </button>
+                         </div>
+                       </>
+                    )}
+                  </div>
+                </div>
+              </>,
+              document.body
+            )}
+
+            {/* 打印预览弹窗 */}
+            {showPrintModal && activeTab === '详情' && (
+              <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center backdrop-blur-sm">
+                <PrdWrapper id="print-modal">
+                  <div className="bg-white w-[640px] rounded shadow-xl flex flex-col overflow-hidden max-h-[90vh] relative z-10">
+                    <div className="px-5 py-3 border-b border-gray-200 flex justify-between items-center bg-white shrink-0">
+                      <h2 className="text-[15px] font-bold text-gray-800 flex items-center">
+                        <Printer size={16} className="mr-2 text-gray-600" /> 打印预览：预收单
+                      </h2>
+                      <X size={18} className="cursor-pointer text-gray-400 hover:text-gray-600" onClick={() => setShowPrintModal(false)} />
+                    </div>
+                    
+                    <div className="p-8 overflow-y-auto bg-[#f0f2f5] flex-1">
+                       <div className="bg-white p-8 shadow-sm border border-gray-200 mx-auto h-fit print-container">
+                          <h3 className="text-center text-[22px] font-bold tracking-[0.2em] mb-4">预收单详情单</h3>
+                          <div className="h-[3px] bg-black mb-6"></div>
+                          
+                          <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-[14px]">
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">单据编号：</span><span className="font-medium text-black break-all">{formData.danJu}</span></div>
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">手工单号：</span><span className="font-medium text-black break-all">{formData.shouGong || '-'}</span></div>
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">单据类型：</span><span className="font-medium text-black">{formData.danJuLeiXing || '-'}</span></div>
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">单据日期：</span><span className="font-medium text-black">{formData.danJuRiQi || '-'}</span></div>
+                             
+                             {formData.danJuLeiXing === '发货单' ? (
+                               <div className="flex items-baseline col-span-2"><span className="text-gray-500 w-[72px] shrink-0">发货渠道：</span><span className="font-medium text-black">{formData.faHuoQuDao || '-'}</span></div>
+                             ) : (
+                               <div className="flex items-baseline col-span-2"><span className="text-gray-500 w-[72px] shrink-0">供应商：</span><span className="font-medium text-black">{formData.gongYingShang || '-'}</span></div>
+                             )}
+                             <div className="flex items-baseline col-span-2"><span className="text-gray-500 w-[72px] shrink-0">收货渠道：</span><span className="font-medium text-black">{formData.shouHuoQuDao || '-'}</span></div>
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">关联单号：</span><span className="font-medium text-black break-all">{formData.guanLianDanHao || '-'}</span></div>
+                             <div className="flex items-baseline"><span className="text-gray-500 w-[72px] shrink-0">操作人：</span><span className="font-medium text-black">{formData.caoZuoRen}</span></div>
+                          </div>
+
+                          <div className="border-t border-dashed border-gray-300 my-6"></div>
+                          
+                          <div className="grid grid-cols-2 gap-y-4 gap-x-8 text-[14px]">
+                            <div className="flex items-baseline col-span-2"><span className="text-gray-500 w-[72px] shrink-0">附件信息：</span><span className="font-medium text-black">详见系统附件</span></div>
+                            
+                            <div className="flex items-start col-span-2">
+                               <span className="text-gray-500 w-[72px] shrink-0">备注内容：</span>
+                               <span className="font-medium text-black min-h-[40px] whitespace-pre-wrap">{formData.beiZhu || '无'}</span>
+                            </div>
+                          </div>
+                       </div>
+                    </div>
+                    
+                    <div className="px-5 py-4 border-t border-gray-200 flex justify-end items-center bg-white shrink-0">
+                      <div className="flex space-x-3">
+                        <button 
+                          onClick={() => setShowPrintModal(false)} 
+                          className="px-6 py-2 border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition-colors text-[13px]"
+                        >
+                          取消
+                        </button>
+                        <button 
+                          onClick={() => {
+                            alert("在此执行系统真实打印指令");
+                            setShowPrintModal(false);
+                          }} 
+                          className="px-6 py-2 bg-[#0088ff] text-white rounded hover:bg-[#0077ee] transition-colors shadow-sm flex items-center text-[13px]"
+                        >
+                          <Printer size={16} className="mr-1.5" /> 确认打印
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </PrdWrapper>
+              </div>
+            )}
+
+            {/* Top Header */}
+            <PrdWrapper id="header">
+              <header className="h-[50px] bg-[#1e2329] text-gray-300 flex items-center justify-between px-4 shrink-0 relative z-10">
+                <div className="flex items-center">
+                  <div className="flex items-center mr-8 text-white">
+                    <div className="w-6 h-6 rounded-full border-[2px] border-white border-dashed mr-2 flex items-center justify-center">
+                       <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <span className="font-bold text-lg tracking-wider">NEBULA</span>
+                  </div>
+                  <nav className="flex space-x-1">
+                    {['首页', '零售', '分销', '全渠道', '商品', '会员', '营销', '供应链', '物流', '结算', '更多'].map((item, idx) => (
+                      <a key={item} href="#" className={`px-4 py-1.5 rounded-sm hover:text-white transition-colors ${idx === 7 ? 'text-white' : ''}`}>
+                        {item}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+                <div className="flex items-center space-x-5 text-gray-400">
+                  <Search size={16} className="cursor-pointer hover:text-white" />
+                  <Maximize size={16} className="cursor-pointer hover:text-white" />
+                  <Globe size={16} className="cursor-pointer hover:text-white" />
+                  <HelpCircle size={16} className="cursor-pointer hover:text-white" />
+                  <Bell size={16} className="cursor-pointer hover:text-white" />
+                  <div className="flex items-center space-x-2 cursor-pointer hover:text-white">
+                    <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center text-white">
+                      <User size={14} />
+                    </div>
+                    <span className="text-sm">admin</span>
+                  </div>
+                </div>
+              </header>
+            </PrdWrapper>
+
+            {/* Main Body */}
+            <div className="flex flex-1 overflow-hidden">
+              
+              {/* Left Sidebar */}
+              <PrdWrapper id="sidebar">
+                <aside className="w-[180px] bg-white border-r border-gray-200 flex flex-col shrink-0 z-10 relative">
+                  <div className="p-2 border-b border-gray-100">
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="请输入" 
+                        className="w-full h-8 pl-2 pr-8 border border-gray-300 rounded-sm text-xs focus:outline-none focus:border-blue-500"
+                      />
+                      <Search size={14} className="absolute right-2 top-2 text-gray-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <SidebarItem icon={<LayoutDashboard size={14} />} label="看板模块" />
+                    <SidebarItem icon={<MenuIcon size={14} />} label="系统管理" />
+                    <SidebarGroup label="入库管理" active>
+                      <SidebarSubItem label="采购入库单" />
+                      <SidebarSubItem label="预收单" active />
+                      <SidebarSubItem label="调拨入库单" />
+                      <SidebarSubItem label="退货入库单" />
+                    </SidebarGroup>
+                    <SidebarGroup label="出库管理" />
+                    <SidebarGroup label="库存管理" />
+                  </div>
+                </aside>
+              </PrdWrapper>
+
+              {/* Right Content Area */}
+              <main className="flex-1 flex flex-col min-w-0 bg-white">
+                
+                {/* Main Tabs */}
+                <div className="h-[40px] bg-[#f0f2f5] flex items-end px-2 border-b border-gray-200 shrink-0 select-none">
+                  <div className="flex items-center h-[32px] px-3 border border-b-0 border-gray-200 rounded-t-sm bg-gray-50 mr-1 text-gray-600 cursor-pointer">
+                    <LayoutDashboard size={14} className="mr-1.5" />
+                    <span>首页</span>
+                    <X size={12} className="ml-4 text-gray-400 hover:text-gray-600" />
+                  </div>
+                  <div className="flex items-center h-[32px] px-3 border border-b-0 border-blue-100 rounded-t-sm bg-white text-[#1677ff] cursor-pointer relative z-10 before:content-[''] before:absolute before:bottom-[-1px] before:left-0 before:right-0 before:h-[2px] before:bg-white">
+                    <span>预收单</span>
+                    <X size={12} className="ml-4 hover:text-blue-800" />
+                  </div>
+                  <div className="flex-1 border-b border-gray-200 h-full"></div>
+                  <div className="flex items-center px-2 border-b border-gray-200 h-full text-gray-400 cursor-pointer hover:text-gray-600">
+                     <ChevronDown size={14} />
+                  </div>
+                </div>
+
+                {/* Inner Content Card */}
+                <div className="flex-1 overflow-hidden flex flex-col bg-white">
+                  
+                  {/* Sub Tabs (列表 / 详情) */}
+                  <div className="flex border-b border-gray-100 text-[14px] shrink-0">
+                    <div 
+                      className={`py-2.5 px-6 cursor-pointer ${activeTab === '列表' ? 'text-[#1677ff] border-b-2 border-[#1677ff] font-medium' : 'text-gray-500 hover:text-blue-600'}`}
+                      onClick={() => setActiveTab('列表')}
+                    >
+                      列表
+                    </div>
+                    <div 
+                      className={`py-2.5 px-6 cursor-pointer ${activeTab === '详情' ? 'text-[#1677ff] border-b-2 border-[#1677ff] font-medium' : 'text-gray-500 hover:text-blue-600'}`}
+                      onClick={() => setActiveTab('详情')}
+                    >
+                      详情
+                    </div>
+                  </div>
+
+                  {/* 动态渲染对应视图 */}
+                  {activeTab === '列表' && <ListView setActiveTab={setActiveTab} />}
+                  {activeTab === '详情' && (
+                    <DetailView 
+                      formData={formData} 
+                      setFormData={setFormData} 
+                      handleGuanLianDanHaoChange={handleGuanLianDanHaoChange}
+                      setShowPrintModal={setShowPrintModal}
+                    />
+                  )}
+
+                </div>
+              </main>
+            </div>
+          </div>
+        </PrdContext.Provider>
+      );
+    }
+
+    // ---------------- 辅助通用 UI 组件 ----------------
+
+    function SidebarItem({ icon, label }) {
+      return (
+        <div className="flex items-center px-4 py-2.5 text-gray-600 hover:bg-gray-50 cursor-pointer">
+          <div className="w-5 flex items-center justify-center mr-2 opacity-60 border border-gray-300 rounded-[2px] bg-white h-5">
+             <div className="w-3 h-3 bg-gray-200 opacity-50"></div>
+          </div>
+          <span className="flex-1">{label}</span>
+        </div>
+      );
+    }
+
+    function SidebarGroup({ label, active, children }) {
+      return (
+        <div>
+          <div className="flex items-center px-4 py-2.5 text-gray-700 cursor-pointer bg-gray-50 border-y border-gray-100">
+            <div className="w-5 flex items-center justify-center mr-2 opacity-60 border border-gray-300 rounded-[2px] bg-white h-5">
+               <div className="w-3 h-3 bg-gray-200 opacity-50"></div>
+            </div>
+            <span className="flex-1 font-medium">{label}</span>
+            {active ? <ChevronDown size={14} className="text-gray-400" /> : <ChevronRight size={14} className="text-gray-400" />}
+          </div>
+          {active && (
+            <div className="bg-white">
+              {children}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function SidebarSubItem({ label, active }) {
+      return (
+        <div className={`flex items-center pl-11 pr-4 py-2 cursor-pointer text-[13px] ${active ? 'text-blue-600 bg-blue-50 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}>
+          <span className="flex-1">{label}</span>
+        </div>
+      );
+    }
+
+    function ListFilterInput({ placeholder, isSearch }) {
+      return (
+        <div className="flex items-center border border-gray-300 rounded-sm bg-white h-[28px] w-[180px] overflow-hidden group hover:border-blue-400 transition-colors">
+          <input type="text" placeholder={placeholder} className="w-full h-full text-[12px] px-2 focus:outline-none placeholder-gray-500" />
+          {isSearch && <Search size={14} className="text-gray-400 mx-2 shrink-0 group-hover:text-blue-400 cursor-pointer" />}
+        </div>
+      );
+    }
+
+    function ListSelectFilter({ label, options }) {
+      return (
+        <div className="flex items-center border border-gray-300 rounded-sm bg-white h-[28px] w-[180px] hover:border-blue-400 transition-colors relative">
+          <div className="px-2 text-gray-500 text-[12px] shrink-0">{label}:</div>
+          <select className="w-full h-full text-[12px] appearance-none bg-transparent focus:outline-none pr-6 cursor-pointer">
+            {options.map(opt => <option key={opt}>{opt}</option>)}
+          </select>
+          <ChevronDown size={14} className="absolute right-2 top-1.5 text-gray-400 pointer-events-none" />
+        </div>
+      );
+    }
+
+    // 改良的统一样式输入框
+    function FormInput({ label, placeholder, required, readOnly, icon, value, onChange }) {
+      return (
+        <div className="flex flex-col h-full">
+          <label className="text-gray-600 mb-1.5 flex items-center h-5">
+            {required && <span className="text-red-500 mr-1">*</span>}
+            {label}:
+          </label>
+          <div className="relative flex flex-1">
+            <input 
+              type="text" 
+              placeholder={placeholder} 
+              readOnly={readOnly}
+              value={value !== undefined ? value : (readOnly ? '' : undefined)}
+              onChange={onChange}
+              className={`h-[28px] border border-gray-300 rounded-sm px-2 text-xs w-full focus:outline-none ${readOnly ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white focus:border-blue-500'}`}
+            />
+            {icon && (
+              <div className="absolute right-0 top-0 h-full w-8 flex items-center justify-center border-l border-gray-300 bg-gray-50 rounded-r-sm cursor-pointer hover:bg-gray-100">
+                {icon}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // 改良后支持整体“编号-简称”值录入的带按钮输入框 (强制只读及不可点击状态以满足特定业务场景)
+    function FormInputWithBtn({ label, placeholder, required, value }) {
+      return (
+        <div className="flex flex-col">
+          <label className="text-gray-600 mb-1.5 flex items-center h-5">
+            {required && <span className="text-red-500 mr-1">*</span>}
+            {label}:
+          </label>
+          <div className="relative flex">
+            <input 
+              type="text" 
+              placeholder={placeholder}
+              value={value || ''}
+              readOnly
+              className="h-[28px] border border-gray-300 rounded-sm px-2 text-xs w-full bg-gray-50 text-gray-500 cursor-not-allowed focus:outline-none truncate"
+            />
+            <button className="h-[28px] w-8 flex items-center justify-center border border-l-0 border-gray-300 bg-gray-100 text-gray-400 text-xs font-bold rounded-r-sm shrink-0 cursor-not-allowed">
+              ...
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    function FormSelect({ label, required, value, onChange, options = [] }) {
+      return (
+        <div className="flex flex-col">
+          <label className="text-gray-600 mb-1.5 flex items-center h-5">
+            {required && <span className="text-red-500 mr-1">*</span>}
+            {label}:
+          </label>
+          <div className="relative flex">
+            <select 
+              value={value}
+              onChange={onChange}
+              className="h-[28px] pl-2 pr-6 border border-gray-300 rounded-sm text-xs w-full appearance-none bg-white focus:outline-none focus:border-blue-500 text-gray-800"
+            >
+              <option value="" disabled hidden>请选择</option>
+              {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            </select>
+            <div className="absolute right-0 top-0 h-full w-7 flex items-center justify-center pointer-events-none border-l border-gray-200 bg-gray-50">
+              <ChevronDown size={14} className="text-gray-400" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function FormCheckbox({ label, checked, onChange }) {
+      return (
+        <div className="flex flex-col">
+          <label className="text-gray-600 mb-1.5 flex items-center h-5">{label}:</label>
+          <div className="h-[28px] flex items-center">
+            <input 
+              type="checkbox" 
+              checked={checked}
+              onChange={onChange}
+              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded cursor-pointer"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    function AttachmentUploader({ title, initialImages = [] }) {
+      const [images, setImages] = useState(initialImages);
+      const fileInputRef = useRef(null);
+
+      const handleAddClick = () => {
+        fileInputRef.current.click();
+      };
+
+      const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        files.forEach(file => {
+          if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              setImages(prev => [...prev, { id: Date.now() + Math.random(), src: event.target.result }]);
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+        e.target.value = null;
+      };
+
+      const removeImage = (id) => {
+        setImages(images.filter(img => img.id !== id));
+      };
+
+      return (
+        <div className="flex flex-col">
+           <div className="text-gray-700 font-medium mb-3">{title}</div>
+           <div className="flex items-center flex-wrap gap-3 mb-2">
+              {images.map(img => (
+                <div key={img.id} className="relative w-[52px] h-[52px] border border-gray-300 bg-white rounded-sm flex items-center justify-center group overflow-hidden">
+                  <img src={img.src} alt="preview" className="w-full h-full object-cover" />
+                  <div 
+                    onClick={() => removeImage(img.id)}
+                    className="absolute -top-1.5 -right-1.5 w-[16px] h-[16px] bg-red-500 rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 text-white z-20 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X size={10} />
+                  </div>
+                </div>
+              ))}
+              <div 
+                onClick={handleAddClick}
+                className="w-[52px] h-[52px] border border-dashed border-gray-400 bg-gray-50 rounded-sm flex items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all active:scale-95"
+              >
+                 <Plus size={24} className="text-gray-400" />
+              </div>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept="image/*"
+                multiple 
+              />
+           </div>
+           <div className="text-gray-400 text-[12px] leading-tight">
+             建议尺寸800*800像素，<br/>单个图片不能超过20M
+           </div>
+        </div>
+      );
+    }
+
+    // 渲染应用
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
