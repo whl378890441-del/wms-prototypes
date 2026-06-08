@@ -1,0 +1,1653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nebula WMS 移动端原型 - PRD版</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#3C5BF2',
+              hover: '#364FD5',
+              active: '#2D45BE',
+              disabled: '#7388F6',
+              light: 'rgba(60, 91, 242, 0.1)',
+              light_five: 'rgba(60, 91, 242, 0.05)',
+            },
+            text: {
+              primary: '#353D51',
+              secondary: '#808592',
+              disabled: '#999999',
+            },
+            status: {
+              success: '#34C759',
+              success_light: 'rgba(52, 199, 89, 0.1)',
+              warning: '#FF9500',
+              warning_light: 'rgba(255, 149, 0, 0.1)',
+              error: '#FF3B30',
+              error_light: 'rgba(255, 59, 48, 0.1)',
+            },
+            border: {
+              default: '#E8E8E8',
+              focus: '#3C5BF2',
+            },
+            bg: {
+              white: '#FFFFFF',
+              light: '#F5F5F7',
+            }
+          },
+          spacing: {
+            xs: '4px',
+            sm: '8px',
+            md: '12px',
+            lg: '16px',
+            xl: '20px',
+            xxl: '24px',
+          },
+          borderRadius: {
+            sm: '2px',
+            md: '4px',
+            lg: '8px',
+            xl: '12px',
+          },
+          fontSize: {
+            title: '16px',
+            body: '14px',
+            helper: '12px',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <script src="https://unpkg.com/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.6/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <!-- Phosphor Icons (用于 PRD 模式) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/css">
+    body {
+      background-color: #E5E7EB;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .tap-active:active { transform: scale(0.98); transition: transform 0.1s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+    .animate-fade { animation: fadeIn 0.2s ease-out forwards; }
+    .animate-slideUp { animation: slideUp 0.3s cubic-bezier(0.1, 1, 0.1, 1) forwards; }
+    .animate-scale { animation: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+    #prototype-container {
+      width: 100%;
+      height: 100vh;
+      max-width: 414px;
+      max-height: 926px;
+      background-color: #FFFFFF;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    @media (min-width: 415px) {
+      #prototype-container { height: 92vh; border-radius: 20px; }
+    }
+
+    /* === PRD Mode CSS === */
+    @keyframes prdPulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7); }
+      50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(255, 149, 0, 0); }
+    }
+    .rich-text-content ul { list-style-type: disc; padding-left: 1.2rem; margin: 0.3em 0; }
+    .rich-text-content ol { list-style-type: decimal; padding-left: 1.2rem; margin: 0.3em 0; }
+    .rich-text-content b, .rich-text-content strong { font-weight: 700; color: #111; }
+    .rich-text-content i, .rich-text-content em { font-style: italic; }
+    .rich-text-content p { margin-bottom: 0.3em; }
+    .rich-text-content table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
+    .rich-text-content th, .rich-text-content td { border: 1px solid #D1D5DB; padding: 6px 8px; text-align: left; min-width: 50px; word-break: break-all; }
+    .rich-text-content th { background-color: #F3F4F6; font-weight: 600; }
+    .prd-badge { animation: prdPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+    .badge-pill-scroll { overflow-x: auto; flex: 1; display: flex; gap: 6px; scrollbar-width: none; -ms-overflow-style: none; }
+    .badge-pill-scroll::-webkit-scrollbar { display: none; }
+    .badge-arrow { width: 20px; height: 24px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 14px; flex-shrink: 0; cursor: pointer; transition: color 0.15s; }
+    .badge-arrow:hover { color: #374151; }
+    .badge-arrow.hidden { visibility: hidden; pointer-events: none; }
+    .badge-pill { padding: 4px 12px; border-radius: 16px; font-size: 12px; white-space: nowrap; flex-shrink: 0; cursor: pointer; background: #f3f4f6; color: #374151; border: 1.5px solid transparent; transition: all 0.15s; }
+    .badge-pill:hover { background: #e5e7eb; }
+    .badge-pill.active { background: #fa8c16; color: #fff; border-color: #fa8c16; }
+
+    body.prd-resizing { cursor: col-resize !important; user-select: none; }
+    body.prd-resizing * { cursor: col-resize !important; }
+    .fade-in { animation: fadeIn 0.2s ease-in forwards; }
+  </style>
+</head>
+<body>
+
+  <!-- PRD Embedded Data Node -->
+  <script type="application/json" id="prd-embedded-data">{
+  "login-form": {
+    "order": 1,
+    "title": "规则① 登录页",
+    "content": "<h4>表单字段说明</h4><table><thead><tr><th>字段</th><th>字段类型</th><th>必填</th><th>默认值</th><th>可编辑</th><th>业务规则</th><th>交互逻辑</th><th>取值来源</th></tr></thead><tbody><tr><td>账号</td><td>文本</td><td>是</td><td>空</td><td>是</td><td>-</td><td>文本输入；右侧提供清除按钮和历史账号下拉切换按钮</td><td>用户输入/本机缓存</td></tr><tr><td>密码</td><td>密码</td><td>是</td><td>空</td><td>是</td><td>-</td><td>密码输入；右侧提供清除按钮</td><td>用户输入/本机缓存</td></tr><tr><td>记住账号</td><td>布尔</td><td>否</td><td>是</td><td>是</td><td>勾选时，登录成功后将账号和密码保存至本机缓存；取消勾选时，退出登录不保留账号和密码</td><td>复选框点击切换</td><td>系统默认</td></tr><tr><td>登录按钮</td><td>操作</td><td>-</td><td>-</td><td>-</td><td>始终可点击，点击时校验账号和密码是否为空，校验不通过显示对应错误提示</td><td>点击执行登录校验</td><td>-</td></tr></tbody></table><h4>提交校验规则</h4><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>账号</td><td>不能为空</td><td>请输入账号</td></tr><tr><td>密码</td><td>不能为空</td><td>请输入密码</td></tr></tbody></table><h4>历史账号下拉列表</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>数据来源</td><td>本机缓存</td></tr><tr><td>最大保存数量</td><td>20条</td></tr><tr><td>排序规则</td><td>按登录时间倒序</td></tr><tr><td>展示格式</td><td>左侧显示用户编号（加粗），右侧显示用户姓名</td></tr><tr><td>选择行为</td><td>点击后自动填充账号和密码字段</td></tr><tr><td>展示触发</td><td>点击账号输入框右侧下拉按钮</td></tr><tr><td>空态</td><td>缓存为空时展示「暂无历史账号」</td></tr></tbody></table>"
+  },
+  "channel-search-card": {
+    "order": 2,
+    "title": "规则② 渠道选择页",
+    "content": "<h4>渠道权限校验</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>无授权渠道</td><td>用户无任何授权渠道时，阻止进入选择渠道页</td></tr><tr><td>单渠道跳过</td><td>用户仅1个授权渠道时，跳过选择渠道页，直接进入首页工作台</td></tr><tr><td>上次渠道被收回</td><td>上次登录渠道已被收回权限时，搜索框清空，不进行默认赋值，「上次登录」标签不展示</td></tr></tbody></table><h4>搜索与当前渠道</h4><table><thead><tr><th>组件</th><th>类型</th><th>必填</th><th>默认值</th><th>可编辑</th><th>业务规则</th><th>交互逻辑</th><th>取值来源</th></tr></thead><tbody><tr><td>渠道搜索框</td><td>文本</td><td>否</td><td>上次登录渠道名称</td><td>是</td><td>支持按渠道名称或编码进行模糊搜索，输入时实时过滤渠道列表</td><td>文本输入，右侧提供清除按钮</td><td>用户输入</td></tr><tr><td>当前渠道卡片</td><td>展示</td><td>-</td><td>上次登录渠道</td><td>-</td><td>展示选中渠道名称和所属仓群；若为上次登录渠道则显示蓝色「上次登录」标签</td><td>只读展示</td><td>渠道选择结果</td></tr><tr><td>所属仓群</td><td>关联文本</td><td>-</td><td>关联带出</td><td>否</td><td>所有渠道均展示该渠道所关联的仓群名称，随渠道选中自动带出</td><td>只读展示</td><td>渠道主数据</td></tr><tr><td>登录按钮</td><td>操作</td><td>-</td><td>-</td><td>-</td><td>已选中渠道时可点击，未选中时禁用</td><td>点击进入首页工作台</td><td>-</td></tr><tr><td>清空按钮</td><td>操作</td><td>-</td><td>-</td><td>-</td><td>-</td><td>清空搜索框并取消选中渠道</td><td>-</td></tr></tbody></table><h4>渠道列表展示规则</h4><table><thead><tr><th>字段</th><th>展示规则</th></tr></thead><tbody><tr><td>渠道名称</td><td>文本，加粗，格式：编码-名称</td></tr><tr><td>所属仓群</td><td>文本，次要色</td></tr><tr><td>选择/已选按钮</td><td>选中状态为实心主色「已选」，未选中为描边主色「选择」</td></tr><tr><td>排序规则</td><td>按渠道编码 A-Z 升序</td></tr><tr><td>上次登录标记</td><td>蓝色标签「上次登录」，仅标记最新登录时间对应的渠道</td></tr><tr><td>搜索空态</td><td>搜索无匹配结果时展示「暂无匹配渠道数据」</td></tr></tbody></table><h4>底部操作区</h4><table><thead><tr><th>操作按钮</th><th>点击行为</th></tr></thead><tbody><tr><td>返回登录页</td><td>返回至登录页面</td></tr></tbody></table>"
+  },
+  "home-dashboard": {
+    "order": 3,
+    "title": "规则③ 首页/工作台",
+    "content": "<h4>顶部渠道栏</h4><table><thead><tr><th>组件</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>在线状态</td><td>绿色圆点</td><td>常驻显示</td><td>系统状态</td></tr><tr><td>渠道名称</td><td>文本，显示渠道名称</td><td>点击整个区域弹出渠道切换抽屉</td><td>当前登录渠道</td></tr><tr><td>切换图标</td><td>右侧箭头图标</td><td>同上</td><td>-</td></tr></tbody></table><h4>仪表盘指标卡片</h4><table><thead><tr><th>字段</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>指标图标</td><td>圆角方形背景+图标</td><td>-</td><td>系统预设</td></tr><tr><td>指标名称</td><td>文本，次要色加粗</td><td>-</td><td>系统预设</td></tr><tr><td>待处理数量</td><td>整数，大号加粗，主色</td><td>-</td><td>实时数据</td></tr><tr><td>单位</td><td>文本「单」</td><td>-</td><td>-</td></tr></tbody></table><p>卡片交互：点击弹出指标明细抽屉。横向滑动浏览全部6张卡片。指标数量为0时正常展示0。</p><h4>指标及明细分组</h4><table><thead><tr><th>指标名称</th><th>明细分组</th></tr></thead><tbody><tr><td>待装箱</td><td>配货、发货计划、调拨、退货</td></tr><tr><td>待收货</td><td>发货、退货、调拨、采购、收货</td></tr><tr><td>待上架</td><td>收货、调拨收货、采购收货、上架指令</td></tr><tr><td>待下架</td><td>配货、调拨通知、退货通知、下架指令</td></tr><tr><td>待预收</td><td>采购到货通知单、发货单</td></tr><tr><td>待盘点</td><td>盘点计划</td></tr></tbody></table><h4>指标明细抽屉规则</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>触发方式</td><td>首页仪表盘点击任一指标卡片</td></tr><tr><td>展示形式</td><td>底部弹出抽屉，高度85%</td></tr><tr><td>标题格式</td><td>{指标名称} 明细</td></tr><tr><td>Tab栏</td><td>按指标分组展示Tab，格式：{分组名}({数量})</td></tr><tr><td>任务列表</td><td>展示任务标题+状态标签+创建时间</td></tr><tr><td>加载方式</td><td>首次加载15条，上滑触底每次加载15条</td></tr><tr><td>任务操作</td><td>点击任务卡片跳转至对应单据处理页面</td></tr><tr><td>加载完状态</td><td>显示「已加载全部」</td></tr><tr><td>空分组</td><td>分组数量为0时Tab仍展示，点击后列表为空不展示数据行</td></tr></tbody></table><h4>快捷作业区</h4><table><thead><tr><th>字段</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>作业名称</td><td>文本，加粗</td><td>点击进入对应作业页面</td><td>用户在快捷作业配置面板中所配置的作业项</td></tr><tr><td>进入图标</td><td>蓝色圆形箭头</td><td>-</td><td>-</td></tr><tr><td>配置按钮</td><td>右上角齿轮图标</td><td>点击弹出快捷作业配置抽屉</td><td>-</td></tr></tbody></table><h4>快捷作业配置规则</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>可选数量范围</td><td>0~4项</td></tr><tr><td>可选作业来源</td><td>全部作业列表（出入库、上下架、报表、更多作业）</td></tr><tr><td>配置方式</td><td>从可选作业列表中选择/移除，支持拖拽排序</td></tr><tr><td>默认配置</td><td>到货预收、验箱收货、拣货下架、一键移库</td></tr><tr><td>保存方式</td><td>点击「保存」即时生效</td></tr></tbody></table><p>配置为0项时，快捷看板区域不展示，由仓库公告区域填充位置。</p><h4>仓库公告</h4><table><thead><tr><th>字段</th><th>展示规则</th></tr></thead><tbody><tr><td>日期</td><td>文本加粗，格式 X月X日，紧跟公告标题</td></tr><tr><td>公告标题</td><td>文本加粗</td></tr><tr><td>公告内容</td><td>文本，次要色，支持多行展示</td></tr></tbody></table><p>排序规则：按发布时间倒序。数据区域独立滚动。无公告时展示「暂无公告通知」。</p><h4>渠道切换抽屉</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>触发位置</td><td>首页顶部渠道栏、库存页渠道栏</td></tr><tr><td>展示形式</td><td>底部弹出抽屉，最大高度85%</td></tr><tr><td>列表内容</td><td>当前用户有权限的全部渠道</td></tr><tr><td>当前渠道</td><td>蓝色背景高亮+勾选图标标记</td></tr><tr><td>切换行为</td><td>点击渠道项即刻切换，关闭抽屉并刷新当前页面数据</td></tr><tr><td>关闭方式</td><td>点击遮罩层或右上角关闭按钮</td></tr><tr><td>切换失败</td><td>切换失败时Toast提示「切换失败」，保留原渠道不变</td></tr></tbody></table>"
+  },
+  "jobs-category-0": {
+    "order": 4,
+    "title": "规则④ 全部作业页",
+    "content": "<h4>作业分类与列表</h4><table><thead><tr><th>字段</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>分类标题</td><td>文本，次要色加粗</td><td>-</td><td>系统预设</td></tr><tr><td>作业名称</td><td>文本，加粗</td><td>点击进入对应作业页面</td><td>系统预设作业列表</td></tr><tr><td>箭头图标</td><td>右侧 chevron</td><td>-</td><td>-</td></tr></tbody></table><p>布局规则：2列网格。分类固定为四组：</p><table><thead><tr><th>分类</th><th>包含作业</th></tr></thead><tbody><tr><td>出入库</td><td>到货预收、验箱收货、装箱发货</td></tr><tr><td>上下架</td><td>上架指令、上架、下架指令、拣货下架、一键移库</td></tr><tr><td>报表</td><td>库存报表</td></tr><tr><td>更多作业</td><td>库位盘点、维修作业、自由装箱、箱调整</td></tr></tbody></table>"
+  },
+  "inventory-list": {
+    "order": 5,
+    "title": "规则⑤ 库存查询页",
+    "content": "<h4>渠道切换栏</h4><table><thead><tr><th>组件</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>渠道切换栏</td><td>显示渠道名称+下拉箭头图标</td><td>点击弹出渠道切换抽屉（详见规则③）</td><td>当前登录渠道</td></tr></tbody></table><h4>库存总览</h4><table><thead><tr><th>组件</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>实际库存</td><td>整数，大号加粗，主色</td><td>只读展示</td><td>当前渠道汇总数据</td></tr><tr><td>可用库存</td><td>整数，大号加粗，主色</td><td>只读展示</td><td>当前渠道汇总数据</td></tr><tr><td>占用库存</td><td>整数，大号加粗，主色</td><td>只读展示</td><td>当前渠道汇总数据</td></tr></tbody></table><h4>库位明细列表</h4><table><thead><tr><th>字段</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>库位编号</td><td>文本，加粗</td><td>-</td><td>当前渠道库位数据</td></tr><tr><td>库存数量</td><td>整数</td><td>-</td><td>当前渠道库位数据</td></tr><tr><td>搜索框</td><td>文本输入</td><td>仅支持按库位名称搜索，输入时实时过滤</td><td>用户输入</td></tr></tbody></table><h4>列表规则</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>排序规则</td><td>库位编号正序</td></tr><tr><td>加载方式</td><td>首次加载15条，上滑触底每次加载15条</td></tr><tr><td>加载完状态</td><td>显示「已加载全部」</td></tr><tr><td>空态</td><td>显示「暂无匹配库位数据」</td></tr></tbody></table><p><b>待确认：</b>自由库位是否需要在库位明细中进行汇总展示？</p>"
+  },
+  "mine-user-card": {
+    "order": 6,
+    "title": "规则⑥ 我的页面",
+    "content": "<h4>用户信息卡片</h4><table><thead><tr><th>组件</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>用户头像</td><td>蓝色圆形背景+人形图标</td><td>-</td><td>系统默认</td></tr><tr><td>用户姓名</td><td>文本，加粗</td><td>-</td><td>当前登录用户</td></tr><tr><td>当前渠道</td><td>蓝色标签，显示渠道名称</td><td>-</td><td>当前登录渠道</td></tr><tr><td>用户编号+部门</td><td>文本，次要色，格式：编号: XXX | 部门</td><td>-</td><td>当前登录用户</td></tr></tbody></table><h4>统计数据</h4><table><thead><tr><th>组件</th><th>展示规则</th><th>交互逻辑</th><th>数据来源</th></tr></thead><tbody><tr><td>今日完成</td><td>整数，绿色大号</td><td>只读展示</td><td>当前用户统计（待讨论：数据来源及统计口径）</td></tr><tr><td>待办任务</td><td>整数，主色大号</td><td>只读展示</td><td>当前用户统计</td></tr></tbody></table><h4>操作区</h4><table><thead><tr><th>组件</th><th>交互逻辑</th></tr></thead><tbody><tr><td>系统设置入口</td><td>列表项+右侧箭头，点击进入系统设置页</td></tr><tr><td>退出登录按钮</td><td>红色描边按钮，点击弹出退出确认对话框</td></tr></tbody></table><h4>退出登录流程</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>确认对话框</td><td>标题「退出登录确认」；内容「您确定要退出当前操作会话、清除当前缓存数据并返回登录主页吗？」</td></tr><tr><td>确认行为</td><td>清除当前会话和缓存数据，返回登录页</td></tr><tr><td>账号保留</td><td>勾选「记住账号」→保留账号和密码；未勾选→清空账号</td></tr><tr><td>取消行为</td><td>关闭对话框，留在当前页面</td></tr></tbody></table>"
+  },
+  "settings-list-area": {
+    "order": 7,
+    "title": "规则⑦ 系统设置页",
+    "content": "<h4>配置项列表</h4><table><thead><tr><th>字段</th><th>字段类型</th><th>必填</th><th>默认值</th><th>可编辑</th><th>业务规则</th><th>交互逻辑</th><th>取值来源</th></tr></thead><tbody><tr><td>装箱自动暂存间隔</td><td>整数(秒)</td><td>是</td><td>15</td><td>是</td><td>最小值为15秒</td><td>点击弹出数字输入弹窗</td><td>系统配置/用户输入</td></tr><tr><td>上架自动暂存间隔</td><td>整数(秒)</td><td>是</td><td>15</td><td>是</td><td>最小值为15秒</td><td>点击弹出数字输入弹窗</td><td>系统配置/用户输入</td></tr><tr><td>下架自动暂存间隔</td><td>整数(秒)</td><td>是</td><td>15</td><td>是</td><td>最小值为15秒</td><td>点击弹出数字输入弹窗</td><td>系统配置/用户输入</td></tr></tbody></table><h4>输入弹窗规则</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>输入方式</td><td>数字输入框</td></tr><tr><td>最小值</td><td>15</td></tr><tr><td>校验规则</td><td>输入值小于15时自动修正为15；为空时默认15</td></tr><tr><td>保存方式</td><td>点击「确定」即时保存</td></tr></tbody></table>"
+  },
+  "bottom-tab-bar": {
+    "order": 8,
+    "title": "规则⑧ 通用组件",
+    "content": "<h4>底部Tab导航</h4><table><thead><tr><th>Tab</th><th>图标</th><th>对应页面</th></tr></thead><tbody><tr><td>首页</td><td>layout-grid</td><td>工作台</td></tr><tr><td>作业</td><td>box</td><td>全部作业</td></tr><tr><td>库存</td><td>database</td><td>库存查询</td></tr><tr><td>我的</td><td>user</td><td>个人中心</td></tr></tbody></table><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>展示范围</td><td>仅在首页、作业、库存、我的四个页面展示</td></tr><tr><td>隐藏范围</td><td>登录页、渠道选择页、系统设置页不展示</td></tr><tr><td>选中态</td><td>当前Tab的图标和文字变为主色</td></tr><tr><td>未选中态</td><td>图标和文字为灰色</td></tr></tbody></table><h4>Toast提示规则</h4><table><thead><tr><th>规则项</th><th>说明</th></tr></thead><tbody><tr><td>展示位置</td><td>屏幕底部居中，Tab栏上方</td></tr><tr><td>展示时长</td><td>约2.2秒后自动消失</td></tr><tr><td>类型</td><td>success（绿色）、error（红色）、warning（橙色）、default（深灰）</td></tr><tr><td>展示形式</td><td>圆角条，白色文字</td></tr></tbody></table>"
+  }
+}</script>
+
+  <div id="prototype-container">
+    <!-- React 挂载点 -->
+  </div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef, useLayoutEffect, useContext } = React;
+
+    // === 安全的 Lucide 图标包装器 ===
+    const Icon = ({ name, className }) => {
+      const iconRef = useRef(null);
+      useEffect(() => {
+        if (window.lucide && iconRef.current) {
+          iconRef.current.innerHTML = '';
+          const i = document.createElement('i');
+          i.setAttribute('data-lucide', name);
+          if (className) i.className = className;
+          iconRef.current.appendChild(i);
+          window.lucide.createIcons({ root: iconRef.current });
+        }
+      }, [name, className]);
+      return <span ref={iconRef} className={`inline-flex items-center justify-center ${className || ''}`}></span>;
+    };
+
+    // ==========================================
+    // PRD 模式组件区
+    // ==========================================
+    const INITIAL_PRD_DOCS = JSON.parse(document.getElementById('prd-embedded-data')?.textContent || '{}');
+
+    const DraggablePRDMenu = ({ isPrdMode, setIsPrdMode, importPrdData, exportPrdData, embedSave, showToast }) => {
+      const [position, setPosition] = useState({ x: -1000, y: -1000 });
+      const [isReady, setIsReady] = useState(false);
+      const [isDragging, setIsDragging] = useState(false);
+      const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, hasMoved: false });
+
+      useEffect(() => {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        setPosition({ x: Math.max(10, w - 75), y: Math.max(10, h - 150) });
+        setIsReady(true);
+      }, []);
+
+      const handlePointerDown = (e) => {
+        e.currentTarget.setPointerCapture(e.pointerId);
+        dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y, hasMoved: false };
+      };
+
+      const handlePointerMove = (e) => {
+        if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+        const dx = e.clientX - dragRef.current.startX;
+        const dy = e.clientY - dragRef.current.startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+          dragRef.current.hasMoved = true;
+          if (!isDragging) setIsDragging(true);
+        }
+        if (dragRef.current.hasMoved) {
+          let newX = dragRef.current.initX + dx;
+          let newY = dragRef.current.initY + dy;
+          newX = Math.max(0, Math.min(newX, window.innerWidth - 52));
+          newY = Math.max(0, Math.min(newY, window.innerHeight - 52));
+          setPosition({ x: newX, y: newY });
+        }
+      };
+
+      const handlePointerUp = (e) => {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+        setTimeout(() => setIsDragging(false), 10);
+      };
+
+      const handleClick = (e) => {
+        if (dragRef.current.hasMoved) { e.stopPropagation(); e.preventDefault(); return; }
+        setIsPrdMode(!isPrdMode);
+        if (showToast) showToast(isPrdMode ? 'PRD 模式已关闭' : 'PRD 模式已开启', 'success');
+      };
+
+      useEffect(() => {
+        const handleResize = () => setPosition(prev => ({
+          x: Math.max(0, Math.min(prev.x, window.innerWidth - 52)),
+          y: Math.max(0, Math.min(prev.y, window.innerHeight - 52))
+        }));
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+
+      if (!isReady) return null;
+
+      return ReactDOM.createPortal(
+        <div className="fixed z-[9999] flex flex-col items-center gap-3 transition-opacity" style={{ left: `${position.x}px`, top: `${position.y}px`, touchAction: 'none' }}>
+          <div className={`flex items-center justify-center w-[52px] h-[52px] bg-white rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border-2 ${isPrdMode ? 'border-[#FF9500]' : 'border-transparent'} cursor-pointer select-none transition-transform ${isDragging ? 'scale-95 opacity-90' : 'hover:scale-105'}`}
+            onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
+            onClick={handleClick} title={isPrdMode ? "关闭 PRD 模式" : "开启 PRD 模式"}>
+            <i className={`ph-fill ${isPrdMode ? 'ph-notebook text-[#FF9500]' : 'ph-notebook text-[#808592]'} text-[26px] pointer-events-none`}></i>
+          </div>
+          {isPrdMode && (
+            <div className="flex flex-col gap-2 fade-in" onPointerDown={e => e.stopPropagation()}>
+              <label className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#3C5BF2] hover:scale-105 transition-transform" title="导入 PRD 配置文件">
+                <i className="ph-fill ph-download-simple text-[20px]"></i>
+                <input type="file" accept=".json" className="hidden" onChange={importPrdData} />
+              </label>
+              <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#34C759] hover:scale-105 transition-transform" title="导出 PRD 配置文件" onClick={exportPrdData}>
+                <i className="ph-fill ph-upload-simple text-[20px]"></i>
+              </div>
+              <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#FF9500] hover:scale-105 transition-transform" title="嵌入保存（直接覆盖原HTML文件）" onClick={embedSave}>
+                <i className="ph-fill ph-floppy-disk text-[20px]"></i>
+              </div>
+            </div>
+          )}
+        </div>,
+        document.body
+      );
+    };
+
+    const RichTextEditor = ({ value, onChange, activeId }) => {
+      const editorRef = useRef(null);
+      useEffect(() => { if (editorRef.current && editorRef.current.innerHTML !== value) editorRef.current.innerHTML = value || ''; }, [activeId]);
+      const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
+      const execCmd = (cmd, arg = null) => { document.execCommand(cmd, false, arg); editorRef.current.focus(); handleInput(); };
+      const insertTable = () => {
+        editorRef.current.focus();
+        document.execCommand('insertHTML', false, `<table style="width: 100%; border-collapse: collapse;"><tbody><tr><td>表头1</td><td>表头2</td></tr><tr><td>内容</td><td>内容</td></tr></tbody></table><p><br></p>`);
+        handleInput();
+      };
+      const getCell = () => {
+        const sel = window.getSelection(); if (!sel.rangeCount) return null;
+        let n = sel.anchorNode; while (n && n !== editorRef.current) { if (n.nodeType === 1 && (n.tagName === 'TD' || n.tagName === 'TH')) return n; n = n.parentNode; }
+        return null;
+      };
+      const insertRow = (above) => {
+        const cell = getCell(); if (!cell) return;
+        const row = cell.parentElement; const tbody = row.parentElement; const newRow = row.cloneNode(true);
+        newRow.querySelectorAll('td,th').forEach(c => { c.innerHTML = ''; });
+        above ? tbody.insertBefore(newRow, row) : tbody.insertBefore(newRow, row.nextSibling); handleInput();
+      };
+      const insertCol = (left) => {
+        const cell = getCell(); if (!cell) return; const idx = Array.from(cell.parentElement.children).indexOf(cell);
+        cell.closest('table').querySelectorAll('tr').forEach(tr => {
+          const ref = tr.children[idx]; const newCell = ref ? ref.cloneNode(true) : document.createElement('td'); newCell.innerHTML = '';
+          left && ref ? tr.insertBefore(newCell, ref) : tr.appendChild(newCell);
+        }); handleInput();
+      };
+      const deleteRow = () => {
+        const cell = getCell(); if (!cell) return; const row = cell.parentElement; const tbody = row.parentElement;
+        if (tbody.children.length <= 1) return; row.remove(); handleInput();
+      };
+      const deleteCol = () => {
+        const cell = getCell(); if (!cell) return; const idx = Array.from(cell.parentElement.children).indexOf(cell);
+        const table = cell.closest('table'); table.querySelectorAll('tr').forEach(tr => { if (tr.children[idx]) tr.children[idx].remove(); });
+        handleInput();
+      };
+
+      return (
+        <div className="border border-[#E8E8E8] rounded-lg overflow-hidden flex flex-col flex-1 bg-white shadow-sm">
+          <div className="flex items-center gap-1.5 p-1.5 border-b border-[#E8E8E8] bg-[#F9FAFB] flex-shrink-0 flex-wrap">
+            <button onClick={() => execCmd('bold')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="加粗"><b className="font-serif text-[15px]">B</b></button>
+            <button onClick={() => execCmd('italic')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="斜体"><i className="font-serif text-[15px]">I</i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={() => execCmd('insertUnorderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="无序列表"><i className="ph ph-list-bullets text-[16px]"></i></button>
+            <button onClick={() => execCmd('insertOrderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="有序列表"><i className="ph ph-list-numbers text-[16px]"></i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={insertTable} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="插入表格"><i className="ph ph-table text-[16px]"></i></button>
+            <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
+            <button onClick={() => insertRow(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="上方插入行">+↑</button>
+            <button onClick={() => insertRow(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="下方插入行">+↓</button>
+            <button onClick={() => insertCol(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="左侧插入列">+←</button>
+            <button onClick={() => insertCol(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="右侧插入列">+→</button>
+            <button onClick={deleteRow} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前行">-行</button>
+            <button onClick={deleteCol} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前列">-列</button>
+          </div>
+          <div ref={editorRef} className="flex-1 p-3 outline-none overflow-y-auto text-[14px] leading-relaxed rich-text-content text-[#353D51]"
+            contentEditable onInput={handleInput} style={{ minHeight: '180px' }} />
+        </div>
+      );
+    };
+
+    const PrdContext = React.createContext();
+
+    const PrdBadge = ({ order, anchorRef }) => {
+      const [pos, setPos] = useState(null);
+      useEffect(() => {
+        const update = () => {
+          const el = anchorRef?.current; if (!el) return;
+          const rect = el.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) setPos({ x: rect.right - 10, y: rect.top - 10 });
+        };
+        update();
+        const timer = setTimeout(update, 100);
+        window.addEventListener('scroll', update, true); window.addEventListener('resize', update);
+        return () => { clearTimeout(timer); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update); };
+      }, [anchorRef]);
+
+      if (!pos) return null;
+      return ReactDOM.createPortal(
+        <div className="fixed w-[22px] h-[22px] bg-[#FF9500] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-[0_2px_6px_rgba(255,149,0,0.5)] z-[9998] pointer-events-none prd-badge"
+          style={{ left: `${pos.x}px`, top: `${pos.y}px` }}>{order}</div>, document.body
+      );
+    };
+
+    const PrdWrapper = ({ id, children, className = "" }) => {
+      const { prdDocs, isPrdMode, openPrdDrawer, drawerOpen } = useContext(PrdContext);
+      const anchorRef = useRef(null);
+      const docData = prdDocs[id];
+      const hasContent = docData && (docData.title || docData.content);
+
+      if (!isPrdMode) return <div className={className}>{children}</div>;
+
+      return (
+        <div ref={anchorRef} className={`relative ring-2 ring-transparent hover:ring-[#FF9500] transition-all rounded-lg cursor-pointer ${className}`}
+          onClickCapture={(e) => { e.preventDefault(); e.stopPropagation(); openPrdDrawer(id); }}>
+          {/* 去除原本阻止滚动的 absolute inset-0 遮罩层，完全依赖 onClickCapture 拦截交互事件，保护滚动条体验 */}
+          {children}
+          {hasContent && !drawerOpen && <PrdBadge order={docData.order} anchorRef={anchorRef} />}
+        </div>
+      );
+    };
+
+    const CIRCLED_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
+    const BadgePillBar = ({ badges, activeId, onSelect, scrollRef }) => {
+      const scrollContainerRef = useRef(null);
+      const [showLeft, setShowLeft] = useState(false);
+      const [showRight, setShowRight] = useState(false);
+      const checkOverflow = () => {
+        const el = scrollContainerRef.current; if (!el) return;
+        setShowLeft(el.scrollLeft > 2);
+        setShowRight(el.scrollWidth > el.clientWidth && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
+      };
+      useEffect(() => { checkOverflow(); }, [badges]);
+      const scroll = (dir) => {
+        const el = scrollContainerRef.current; if (!el) return;
+        el.scrollBy({ left: dir * 120, behavior: 'smooth' });
+        setTimeout(checkOverflow, 200);
+      };
+      useEffect(() => { if (scrollRef) scrollRef.current = scrollContainerRef.current; }, []);
+
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px', background: '#fff', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }}>
+          <div className={`badge-arrow ${showLeft ? '' : 'hidden'}`} onClick={() => scroll(-1)}>◀</div>
+          <div ref={scrollContainerRef} className="badge-pill-scroll" onScroll={checkOverflow}>
+            {badges.map(b => (
+              <div key={b.id} className={`badge-pill ${b.id === activeId ? 'active' : ''}`} onClick={() => onSelect(b.id)}>
+                {CIRCLED_NUMS[b.order - 1] || b.order}
+              </div>
+            ))}
+          </div>
+          <div className={`badge-arrow ${showRight ? '' : 'hidden'}`} onClick={() => scroll(1)}>▶</div>
+        </div>
+      );
+    };
+
+    // === MOCK 预置数据 ===
+    const INITIAL_CHANNELS = [
+      { code: 'CKEC001', name: 'CKEC001-总部大仓', cluster: '华南仓群' },
+      { code: 'GZPYZY001', name: 'GZPYZY001-番禺直营', cluster: '华南仓群' },
+      { code: 'GZPYZY002', name: 'GZPYZY002-番禺直营', cluster: '华南仓群' },
+      { code: 'SHWX001', name: 'SHWX001-售后维修', cluster: '华东仓群' },
+      { code: 'ZYDC001', name: 'ZYDC001-直营大仓', cluster: '华北仓群' },
+      { code: 'BJD001', name: 'BJD001-北京大仓', cluster: '华北仓群' },
+      { code: 'SHD001', name: 'SHD001-上海大仓', cluster: '华东仓群' },
+      { code: 'SZD001', name: 'SZD001-深圳大仓', cluster: '华南仓群' },
+      { code: 'CDD001', name: 'CDD001-成都大仓', cluster: '西南仓群' },
+      { code: 'WHD001', name: 'WHD001-武汉大仓', cluster: '华中仓群' }
+    ];
+
+    const ALL_JOBS = [
+      { id: 'job_dhys', name: '到货预收', category: '出入库', desc: '到货快速扫码预约' },
+      { id: 'job_yxsh', name: '验箱收货', category: '出入库', desc: '按箱验货极速上架' },
+      { id: 'job_zxfh', name: '装箱发货', category: '出入库', desc: '出库包装发运校验' },
+      { id: 'job_sjzl', name: '上架指令', category: '上下架', desc: '系统智能指派上架' },
+      { id: 'job_sj', name: '上架', category: '上下架', desc: '库位货品码匹配绑定' },
+      { id: 'job_xjzl', name: '下架指令', category: '上下架', desc: '波次配货下架任务' },
+      { id: 'job_jhxj', name: '拣货下架', category: '上下架', desc: '移动货架人工分拣' },
+      { id: 'job_yjyk', name: '一键移库', category: '上下架', desc: '货位快速调整转移' },
+      { id: 'job_kcbb', name: '库存报表', category: '报表', desc: '库位实物数量秒查' },
+      { id: 'job_kwpd', name: '库位盘点', category: '更多作业', desc: '动态盘点与货位校对' },
+      { id: 'job_wxzy', name: '维修作业', category: '更多作业', desc: '售后维修分流作业' },
+      { id: 'job_zyzx', name: '自由装箱', category: '更多作业', desc: '非标货物自主拼箱' },
+      { id: 'job_xtz', name: '箱调整', category: '更多作业', desc: '整箱货拆箱及拼装' }
+    ];
+
+    const DASHBOARD_METRICS = [
+      { id: 'zhuangxiang', title: '待装箱', count: 9, icon: 'package', group: [{ label: '配货', val: 3 }, { label: '发货计划', val: 2 }, { label: '调拨', val: 2 }, { label: '退货', val: 2 }] },
+      { id: 'shouhuo', title: '待收货', count: 11, icon: 'package-open', group: [{ label: '发货', val: 3 }, { label: '退货', val: 2 }, { label: '调拨', val: 2 }, { label: '采购', val: 2 }, { label: '收货', val: 2 }] },
+      { id: 'shangjia', title: '待上架', count: 9, icon: 'arrow-up-circle', group: [{ label: '收货', val: 3 }, { label: '调拨收货', val: 2 }, { label: '采购收货', val: 2 }, { label: '上架指令', val: 2 }] },
+      { id: 'xiajia', title: '待下架', count: 9, icon: 'arrow-down-circle', group: [{ label: '配货', val: 3 }, { label: '调拨通知', val: 2 }, { label: '退货通知', val: 2 }, { label: '下架指令', val: 2 }] },
+      { id: 'yushou', title: '待预收', count: 5, icon: 'clipboard-list', group: [{ label: '采购到货通知单', val: 3 }, { label: '发货单', val: 2 }] },
+      { id: 'pandian', title: '待盘点', count: 3, icon: 'clipboard-check', group: [{ label: '盘点计划', val: 3 }] }
+    ];
+
+    const DEFAULT_SHORTCUTS = ['job_dhys', 'job_yxsh', 'job_jhxj', 'job_yjyk'];
+
+    const FULL_PENDING_TASKS = Array.from({ length: 45 }).map((_, i) => {
+        const idx = i + 1;
+        const typeMap = [
+            { type: 'inbound', status: '待收货', title: '采购入库单 PO-202606' },
+            { type: 'outbound', status: '待拣货', title: '调拨出库单 DO-202606' },
+            { type: 'inventory', status: '待复核', title: '盘点差异复核 PD-202606' },
+            { type: 'inbound', status: '待质检', title: '退货质检单 QA-202606' }
+        ];
+        const item = typeMap[i % 4];
+        return {
+            id: `T${String(idx).padStart(3, '0')}`,
+            title: `${item.title}${String(idx).padStart(3, '0')}`,
+            time: `${Math.floor((i * 13) % 60) + 1}分钟前 创建`,
+            status: item.status,
+            type: item.type
+        };
+    });
+
+    const HISTORY_ACCOUNTS = [
+      { name: '李俊峰', no: 'FSW24' },
+      { name: '张三', no: 'GZ990' }
+    ];
+
+    const ANNOUNCEMENTS = [
+      { id: 1, date: '6月2日', title: '华南仓群盘点通知', content: '请各岗位配合完成月度盘点工作' },
+      { id: 2, date: '6月1日', title: '系统升级维护通知', content: '今晚22:00-24:00系统维护升级' },
+      { id: 3, date: '5月30日', title: '夏季防暑物资领取通知', content: '请各班组长到行政处领取防暑用品' }
+    ];
+
+    const FULL_INVENTORY = [
+      { id: '1', loc: 'LOC-A-01-01', qty: 256 },
+      { id: '2', loc: 'LOC-A-01-02', qty: 189 },
+      { id: '3', loc: 'LOC-A-01-03', qty: 326 },
+      { id: '4', loc: 'LOC-A-02-01', qty: 142 },
+      { id: '5', loc: 'LOC-B-01-01', qty: 98 },
+      { id: '6', loc: 'LOC-B-01-02', qty: 215 },
+      { id: '7', loc: 'LOC-B-02-01', qty: 158 },
+      { id: '8', loc: 'LOC-C-01-01', qty: 367 },
+      ...Array.from({ length: 52 }).map((_, i) => {
+          const row = String.fromCharCode(67 + Math.floor((i) / 20)); 
+          const shelf = String(Math.floor(((i) % 20) / 5) + 1).padStart(2, '0');
+          const layer = String(((i) % 5) + 1).padStart(2, '0');
+          return {
+              id: String(i + 9),
+              loc: `LOC-${row}-${shelf}-${layer}`,
+              qty: Math.floor(Math.random() * 400) + 10
+          };
+      })
+    ].sort((a, b) => a.loc.localeCompare(b.loc));
+
+    function App() {
+      const [currentTab, setCurrentTab] = useState('login'); 
+      const [toast, setToast] = useState({ show: false, text: '', type: 'default' });
+      const [dialog, setDialog] = useState({ show: false, title: '', content: '', onConfirm: null });
+      
+      const [account, setAccount] = useState('');
+      const [password, setPassword] = useState('');
+      const [isRemember, setIsRemember] = useState(true);
+      const [selectedChannel, setSelectedChannel] = useState(INITIAL_CHANNELS[0]);
+      const [channelSearchText, setChannelSearchText] = useState(INITIAL_CHANNELS[0] ? INITIAL_CHANNELS[0].name : '');
+      const [shortcutIds, setShortcutIds] = useState(DEFAULT_SHORTCUTS);
+      const [showAccountDropdown, setShowAccountDropdown] = useState(false);
+      
+      const [settings, setSettings] = useState({ packInterval: '15', putawayInterval: '15', pickupInterval: '15' });
+      const [inputModal, setInputModal] = useState({ show: false, key: '', title: '', value: '' });
+
+      const [drawerType, setDrawerType] = useState(null);
+      const [activeMetricDetail, setActiveMetricDetail] = useState(null);
+      const [activeTabIdx, setActiveTabIdx] = useState(0); 
+      const [tempShortcutIds, setTempShortcutIds] = useState([]);
+      const [draggedItem, setDraggedItem] = useState(null);
+
+      const [displayedTasks, setDisplayedTasks] = useState([]);
+      const [isLoadingMore, setIsLoadingMore] = useState(false);
+      const [inventorySearch, setInventorySearch] = useState('');
+      const [displayedInventoryCount, setDisplayedInventoryCount] = useState(15);
+      const [isInventoryLoading, setIsInventoryLoading] = useState(false);
+
+      // ==========================================
+      // PRD 模式状态与函数
+      // ==========================================
+      const [isPrdMode, setIsPrdMode] = useState(false);
+      const [activePrdId, setActivePrdId] = useState(null);
+      const [drawerOpen, setDrawerOpen] = useState(false);
+      const [prdDrawerWidth, setPrdDrawerWidth] = useState(560);
+      const [isResizing, setIsResizing] = useState(false);
+      const resizeRef = useRef(null);
+      const badgePillScrollRef = useRef(null);
+      const [editingDoc, setEditingDoc] = useState(null);
+      const [isEditing, setIsEditing] = useState(false);
+      const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+      const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+      const [prdDocs, setPrdDocs] = useState(INITIAL_PRD_DOCS);
+
+      const exportPrdData = () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prdDocs, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr; a.download = "PDA_PRD配置数据.json";
+        document.body.appendChild(a); a.click(); a.remove();
+        showToast('已导出 PRD 数据文件', 'success');
+      };
+
+      const importPrdData = (event) => {
+        const file = event.target.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const imported = JSON.parse(e.target.result);
+            if (typeof imported === 'object' && imported !== null) {
+              setPrdDocs(imported); showToast('PRD 数据导入成功', 'success');
+            } else { showToast('无效的数据文件格式', 'error'); }
+          } catch (error) { showToast('文件解析失败', 'error'); }
+        };
+        reader.readAsText(file); event.target.value = null;
+      };
+
+      const openPrdDrawer = (id) => {
+        setActivePrdId(id); setIsConfirmingDelete(false); setShowDiscardConfirm(false);
+        if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
+        else {
+          const orders = Object.values(prdDocs).map(d => d.order);
+          setEditingDoc({ order: orders.length > 0 ? Math.max(...orders) + 1 : 1, title: '', content: '' });
+          setIsEditing(true);
+        }
+        setDrawerOpen(true);
+      };
+
+      const hasUnsavedChanges = () => {
+        if (!editingDoc) return false;
+        const existing = prdDocs[activePrdId];
+        return !existing || existing.title !== editingDoc.title || existing.content !== editingDoc.content;
+      };
+
+      const closePrdDrawer = () => {
+        if (isEditing && hasUnsavedChanges()) { setShowDiscardConfirm(true); return; }
+        setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const discardChanges = () => {
+        setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const executeDelete = () => {
+        let nd = { ...prdDocs }; delete nd[activePrdId];
+        let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
+        const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; });
+        setPrdDocs(rebuilt); setIsConfirmingDelete(false); showToast('已删除该角标说明', 'success');
+        if (sorted.length > 0) {
+          const nextId = sorted[0];
+          setActivePrdId(nextId); setEditingDoc({ ...rebuilt[nextId] }); setIsEditing(false);
+        } else {
+          setDrawerOpen(false); setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+        }
+      };
+
+      const confirmPrdSave = () => {
+        let nd = { ...prdDocs };
+        if (!editingDoc.title?.trim() && !editingDoc.content?.trim()) {
+          delete nd[activePrdId];
+          let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
+          const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; }); nd = rebuilt;
+        } else { nd[activePrdId] = editingDoc; }
+        setPrdDocs(nd);
+        setDrawerOpen(false); setIsEditing(false); showToast('保存成功，请点击悬浮球【嵌入保存】以固化到文件', 'success');
+        setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
+      };
+
+      const embedSave = async () => {
+        if (typeof window.showOpenFilePicker !== 'function') { showToast('当前浏览器不支持直接覆盖，请使用导出功能', 'error'); return; }
+        try {
+          const [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'HTML 文件', accept: { 'text/html': ['.html', '.htm'] } }], multiple: false });
+          const file = await fileHandle.getFile(); const fileContent = await file.text();
+          const jsonStartTag = '<script type="application/json" id="prd-embedded-data">';
+          const jsonEndTag = '<' + '/script>';
+          let jsonStart = -1; let searchPos = 0;
+          while (true) {
+            const idx = fileContent.indexOf(jsonStartTag, searchPos); if (idx === -1) break;
+            const afterTag = fileContent.substring(idx + jsonStartTag.length, idx + jsonStartTag.length + 10).trim();
+            if (afterTag.startsWith('{')) { jsonStart = idx; break; } searchPos = idx + 1;
+          }
+          if (jsonStart === -1) { showToast('选中文件缺少 PRD 嵌入区', 'error'); return; }
+          const jsonEnd = fileContent.indexOf(jsonEndTag, jsonStart);
+          if (jsonEnd === -1) { showToast('PRD 嵌入区格式异常', 'error'); return; }
+          const jsonStr = JSON.stringify(prdDocs, null, 2);
+          const before = fileContent.substring(0, jsonStart + jsonStartTag.length);
+          const after = fileContent.substring(jsonEnd);
+          const newContent = before + '\n' + jsonStr + '\n' + after;
+          const writable = await fileHandle.createWritable();
+          await writable.write(newContent); await writable.close();
+          showToast('原文件已成功覆盖更新', 'success');
+        } catch (error) {
+          if (error.name !== 'AbortError') showToast('嵌入保存失败: ' + error.message, 'error');
+        }
+      };
+
+      const handlePrdChange = (field, value) => setEditingDoc(prev => ({ ...prev, [field]: value }));
+
+      const startResize = (e) => {
+        e.preventDefault(); setIsResizing(true); document.body.classList.add('prd-resizing');
+        resizeRef.current = { startX: e.clientX, startWidth: prdDrawerWidth };
+        const onMove = (ev) => {
+          const dx = resizeRef.current.startX - ev.clientX;
+          const newWidth = Math.max(360, Math.min(900, resizeRef.current.startWidth + dx));
+          setPrdDrawerWidth(newWidth);
+        };
+        const onUp = () => {
+          setIsResizing(false); document.body.classList.remove('prd-resizing');
+          document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp);
+        };
+        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+      };
+
+
+      const showToast = (text, type = 'default') => {
+        setToast({ show: true, text, type });
+        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 2200);
+      };
+
+      const handleSelectChannel = (ch) => {
+        setSelectedChannel(ch);
+        setChannelSearchText(ch ? ch.name : '');
+      };
+
+      const filteredChannels = useMemo(() => {
+        let channels = [...INITIAL_CHANNELS];
+        const query = channelSearchText.trim().toLowerCase();
+        
+        if (query && (!selectedChannel || selectedChannel.name.toLowerCase() !== query)) {
+          channels = channels.filter(ch => 
+            ch.name.toLowerCase().includes(query) || 
+            ch.code.toLowerCase().includes(query) || 
+            ch.cluster.toLowerCase().includes(query)
+          );
+        }
+        return channels.sort((a, b) => a.code.localeCompare(b.code));
+      }, [channelSearchText, selectedChannel]);
+
+      const handleLoginSubmit = () => {
+        if (!account.trim()) return showToast('请输入账号', 'error');
+        if (!password.trim()) return showToast('请输入密码', 'error');
+        
+        setCurrentTab('channel');
+        showToast('登录成功，正在加载渠道...', 'success');
+      };
+
+      const handleChannelConfirm = () => {
+        if (!selectedChannel) return showToast('请先选择一个可用渠道', 'warning');
+        setCurrentTab('home');
+        showToast(`已成功登入: ${selectedChannel.name.split('-')[1]}`, 'success');
+      };
+
+      const handleLogout = () => {
+        setDialog({
+          show: true,
+          title: '退出登录确认',
+          content: '您确定要退出当前操作会话、清除当前缓存数据并返回登录主页吗？',
+          onConfirm: () => {
+            setCurrentTab('login');
+            if (!isRemember) setAccount('');
+            setPassword('');
+            setDialog({ show: false });
+            showToast('已安全退出当前会话', 'default');
+          }
+        });
+      };
+
+      const toggleShortcutSelection = (id) => {
+        if (tempShortcutIds.includes(id)) {
+          setTempShortcutIds(prev => prev.filter(item => item !== id));
+        } else {
+          if (tempShortcutIds.length >= 4) return showToast('快捷作业区最多限选择4项', 'warning');
+          setTempShortcutIds(prev => [...prev, id]);
+        }
+      };
+
+      const saveShortcutConfig = () => {
+        setShortcutIds(tempShortcutIds);
+        setDrawerType(null);
+        showToast('快捷作业桌面布局配置已保存', 'success');
+      };
+
+      const generateTasksForTab = (statusTitle, tabLabel, count, startIndex = 0) => {
+        return Array.from({ length: count }).map((_, i) => {
+            const idx = startIndex + i + 1;
+            return {
+                id: `T-${tabLabel}-${idx}`,
+                title: `${tabLabel} NO-${202606000 + idx}`,
+                time: `${Math.floor((i * 13) % 60) + 1}分钟前 创建`,
+                status: statusTitle, 
+            };
+        });
+      };
+
+      const loadMoreTasks = () => {
+        if (isLoadingMore || !activeMetricDetail) return;
+        const currentGroup = activeMetricDetail.group[activeTabIdx];
+        if (displayedTasks.length >= currentGroup.val) return;
+
+        setIsLoadingMore(true);
+        setTimeout(() => {
+            const nextCount = Math.min(15, currentGroup.val - displayedTasks.length);
+            const nextTasks = generateTasksForTab(activeMetricDetail.title, currentGroup.label, nextCount, displayedTasks.length);
+            setDisplayedTasks(prev => [...prev, ...nextTasks]);
+            setIsLoadingMore(false);
+        }, 600);
+      };
+
+      const handleTaskScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop <= clientHeight + 20) {
+            loadMoreTasks();
+        }
+      };
+
+      const filteredInventory = useMemo(() => {
+        if (!inventorySearch) return FULL_INVENTORY;
+        return FULL_INVENTORY.filter(item => item.loc.toUpperCase().includes(inventorySearch.toUpperCase()));
+      }, [inventorySearch]);
+
+      const visibleInventory = useMemo(() => {
+        return filteredInventory.slice(0, displayedInventoryCount);
+      }, [filteredInventory, displayedInventoryCount]);
+
+      const handleInventoryScroll = (e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop <= clientHeight + 20) {
+            if (isInventoryLoading || displayedInventoryCount >= filteredInventory.length) return;
+            setIsInventoryLoading(true);
+            setTimeout(() => {
+                setDisplayedInventoryCount(prev => prev + 15);
+                setIsInventoryLoading(false);
+            }, 600);
+        }
+      };
+
+      return (
+        <PrdContext.Provider value={{ prdDocs, isPrdMode, openPrdDrawer, drawerOpen }}>
+        <div className="w-full h-full flex flex-col bg-bg-light overflow-hidden text-text-primary">
+          
+          <DraggablePRDMenu isPrdMode={isPrdMode} setIsPrdMode={setIsPrdMode} importPrdData={importPrdData} exportPrdData={exportPrdData} embedSave={embedSave} showToast={showToast} />
+
+          {/* === 模拟系统状态栏 === */}
+          <PrdWrapper id="system-statusbar" className="h-[44px] bg-[#FFFFFF] px-4 flex items-center justify-between border-b border-[#E8E8E8] shrink-0 z-10">
+            <div className="text-[14px] font-bold tracking-tight">14:35</div>
+            <div className="flex items-center gap-2">
+              <Icon name="signal" className="w-4 h-4" />
+              <span className="text-[12px] font-bold">5G</span>
+              <Icon name="battery-full" className="w-5 h-5" />
+            </div>
+          </PrdWrapper>
+
+          {/* === 主内容区 === */}
+          <div className="flex-1 relative overflow-hidden flex flex-col">
+            
+            {/* 1. 登录页面 */}
+            {currentTab === 'login' && (
+              <div className="flex-1 flex flex-col bg-bg-white px-lg py-xl justify-between animate-fade overflow-y-auto no-scrollbar">
+                <div>
+                  <div className="flex flex-col items-center mt-8 mb-10">
+                    <div className="w-[64px] h-[64px] bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4">
+                      <Icon name="package" className="w-10 h-10 text-white" />
+                    </div>
+                    <h2 className="text-[20px] font-bold text-text-primary tracking-wide">Nebula WMS</h2>
+                    <span className="text-[14px] text-text-secondary mt-1">PDA v1.0</span>
+                  </div>
+
+                  <PrdWrapper id="login-form" className="relative z-10 space-y-md">
+                    <div>
+                      <label className="block text-[14px] font-semibold text-text-secondary mb-2">账号</label>
+                      <div className="relative z-20">
+                        <input 
+                          type="text" 
+                          value={account}
+                          onChange={(e) => setAccount(e.target.value)}
+                          placeholder="请输入您的账号"
+                          className="w-full h-[44px] pl-3 pr-20 bg-[#F5F5F7] border border-border-default rounded-lg text-[15px] focus:outline-none focus:border-border-focus focus:bg-white transition-all"
+                        />
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                          {account && (
+                            <button onClick={() => setAccount('')} className="p-1 text-text-disabled hover:text-text-secondary tap-active">
+                              <Icon name="x-circle" className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button onClick={() => setShowAccountDropdown(!showAccountDropdown)} className="p-1 text-text-secondary hover:text-text-primary border-l border-border-default pl-2 tap-active">
+                            <Icon name="chevron-down" className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        {/* 账号下拉切换列表 */}
+                        {showAccountDropdown && (
+                          <div className="absolute top-[50px] left-0 w-full z-50">
+                            <PrdWrapper id="account-dropdown" className="bg-[#FFFFFF] border border-border-default rounded-lg shadow-lg overflow-hidden">
+                              {HISTORY_ACCOUNTS.map((acc, index) => (
+                                <div 
+                                  key={index} 
+                                  onClick={() => {
+                                    setAccount(acc.no);
+                                    setPassword('••••••');
+                                    setShowAccountDropdown(false);
+                                    showToast(`已切换并填充账号: ${acc.no}`);
+                                  }}
+                                  className="px-4 py-3 flex items-center justify-between border-b border-border-default last:border-0 hover:bg-bg-light cursor-pointer tap-active"
+                                >
+                                  <span className="text-[15px] font-bold text-text-primary">{acc.no}</span>
+                                  <span className="text-[14px] text-text-secondary">{acc.name}</span>
+                                </div>
+                              ))}
+                            </PrdWrapper>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[14px] font-semibold text-text-secondary mb-2">密码</label>
+                      <div className="relative">
+                        <input 
+                          type="password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder="请输入登录密码"
+                          className="w-full h-[44px] px-3 bg-[#F5F5F7] border border-border-default rounded-lg text-[15px] focus:outline-none focus:border-border-focus focus:bg-white transition-all"
+                        />
+                        {password && (
+                          <button onClick={() => setPassword('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-disabled">
+                            <Icon name="x-circle" className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div onClick={() => setIsRemember(!isRemember)} className="flex items-center gap-2 py-2 cursor-pointer">
+                      <div className={`w-4 h-4 border rounded flex items-center justify-center transition-all ${isRemember ? 'border-primary bg-primary' : 'border-text-secondary'}`}>
+                        {isRemember && <Icon name="check" className="w-3 h-3 text-white" />}
+                      </div>
+                      <span className="text-[14px] text-text-secondary">记住账号</span>
+                    </div>
+                  </PrdWrapper>
+
+                  <button 
+                    onClick={handleLoginSubmit}
+                    className="w-full h-[48px] bg-primary text-white text-[16px] font-medium rounded-lg mt-8 tap-active hover:bg-primary-hover shadow-md transition-colors"
+                  >
+                    登 录
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 2. 渠道选择页面 */}
+            {currentTab === 'channel' && (
+              <div className="flex-1 flex flex-col bg-bg-light px-4 py-4 animate-fade overflow-hidden">
+                <div className="shrink-0 mb-4">
+                  <span className="text-[13px] text-text-secondary font-bold tracking-wider uppercase block">Nebula WMS</span>
+                  <h3 className="text-[20px] font-extrabold mt-1">选择登录渠道</h3>
+                </div>
+
+                <PrdWrapper id="channel-search-card" className="bg-[#FFFFFF] border-2 border-primary rounded-xl p-4 shadow-sm relative mb-4 shrink-0 block">
+                  <div className="absolute top-0 right-0 bg-primary text-white text-[11px] font-bold px-3 py-1 rounded-bl-xl">当前</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] text-text-secondary">已选定渠道</span>
+                    {selectedChannel && selectedChannel.code === INITIAL_CHANNELS[0].code && (
+                      <span className="text-[10px] bg-primary-light text-primary font-bold px-1.5 py-0.5 rounded">上次登录</span>
+                    )}
+                  </div>
+                  <div className="relative mt-2 flex items-center bg-[#F5F5F7] rounded-lg h-[40px] px-3 border border-transparent focus-within:border-primary transition-all">
+                    <Icon name="search" className="w-4 h-4 text-text-secondary mr-2 shrink-0" />
+                    <input
+                      type="text"
+                      value={channelSearchText}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setChannelSearchText(val);
+                        const match = INITIAL_CHANNELS.find(ch => ch.name.toLowerCase() === val.toLowerCase() || ch.code.toLowerCase() === val.toLowerCase());
+                        if (match) setSelectedChannel(match);
+                        else setSelectedChannel(null);
+                      }}
+                      placeholder="输入渠道代码或名称搜索"
+                      className="flex-1 bg-transparent text-[15px] font-bold text-text-primary focus:outline-none min-w-0 placeholder-[#808592]"
+                    />
+                    {channelSearchText && (
+                      <button onClick={() => { setChannelSearchText(''); setSelectedChannel(null); }} className="text-text-disabled hover:text-text-secondary shrink-0 ml-1 p-0.5 tap-active">
+                        <Icon name="x-circle" className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  <span className="text-[13px] text-text-secondary block mt-1.5">
+                    所属仓群: <span className="text-text-primary font-medium">{selectedChannel ? selectedChannel.cluster : '--'}</span>
+                  </span>
+                </PrdWrapper>
+
+                <div className="grid grid-cols-2 gap-3 mb-4 shrink-0">
+                  <button onClick={() => handleSelectChannel(null)} className="h-[44px] bg-[#FFFFFF] border border-border-default text-[15px] font-bold rounded-lg tap-active">清空</button>
+                  <button onClick={handleChannelConfirm} disabled={!selectedChannel} className={`h-[44px] text-[15px] font-bold rounded-lg tap-active transition-colors ${selectedChannel ? 'bg-primary text-white shadow-md' : 'bg-primary-disabled text-white opacity-80 cursor-not-allowed'}`}>登 录</button>
+                </div>
+
+                <span className="text-[13px] font-bold text-text-secondary mb-2 block shrink-0">可选渠道列表 (A-Z)</span>
+                
+                {/* 可选渠道列表：作为独立滚动区 */}
+                <PrdWrapper id="channel-list-area" className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2.5 pb-2 block">
+                  {filteredChannels.map((ch) => {
+                    const isSelected = selectedChannel?.code === ch.code;
+                    return (
+                      <div key={ch.code} className={`p-3.5 rounded-xl border flex items-center justify-between ${isSelected ? 'bg-primary-light_five border-primary' : 'bg-[#FFFFFF] border-border-default'}`}>
+                        <div>
+                          <span className="text-[15px] font-bold block">{ch.name}</span>
+                          <span className="text-[13px] text-text-secondary block mt-0.5">{ch.cluster}</span>
+                        </div>
+                        <button onClick={() => handleSelectChannel(ch)} className={`px-4 py-1.5 rounded-md text-[13px] font-bold border ${isSelected ? 'bg-primary border-primary text-white' : 'bg-[#FFFFFF] border-primary text-primary'}`}>
+                          {isSelected ? '已选' : '选择'}
+                        </button>
+                      </div>
+                    );
+                  })}
+                  {filteredChannels.length === 0 && (
+                    <div className="py-10 text-center text-text-secondary text-[13px]">暂无匹配渠道数据</div>
+                  )}
+                </PrdWrapper>
+
+                {/* 底部固定区 */}
+                <div className="mt-auto pt-3 border-t border-border-default shrink-0">
+                  <button onClick={() => setCurrentTab('login')} className="w-full h-[44px] bg-[#FFFFFF] border border-border-default text-[15px] font-bold text-text-primary rounded-lg tap-active shadow-sm flex items-center justify-center gap-1.5 hover:bg-bg-light transition-colors">
+                    <Icon name="arrow-left" className="w-4 h-4" /> 返回登录页
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 3. 首页（工作台） */}
+            {currentTab === 'home' && (
+              <div className="flex-1 flex flex-col bg-bg-light px-4 py-3 overflow-hidden animate-fade">
+                <PrdWrapper id="home-top-bar" className="bg-[#FFFFFF] h-[44px] px-4 rounded-xl border border-border-default flex items-center justify-between cursor-pointer shrink-0 mb-3 shadow-sm block">
+                  <div onClick={() => setDrawerType('channels')} className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-status-success rounded-full"></span>
+                      <span className="text-[15px] font-bold">{selectedChannel ? selectedChannel.name.split('-')[1] : '选择渠道'}</span>
+                    </div>
+                    <Icon name="arrow-right-left" className="w-4 h-4 text-text-secondary" />
+                  </div>
+                </PrdWrapper>
+
+                <PrdWrapper id="home-dashboard" className="relative z-10 shrink-0 mb-3 block">
+                  <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                    {DASHBOARD_METRICS.map((metric) => {
+                      return (
+                        <div 
+                          key={metric.id} 
+                          onClick={() => { 
+                            setActiveMetricDetail(metric); 
+                            setActiveTabIdx(0); 
+                            const firstGroup = metric.group[0];
+                            setDisplayedTasks(generateTasksForTab(metric.title, firstGroup.label, Math.min(15, firstGroup.val), 0));
+                            setDrawerType('metrics'); 
+                          }} 
+                          className="w-[116px] shrink-0 bg-[#FFFFFF] rounded-2xl p-3.5 shadow-sm border border-border-default hover:border-primary hover:shadow-md cursor-pointer tap-active relative overflow-hidden group transition-all"
+                        >
+                          <div className="absolute -right-3 -top-3 w-12 h-12 rounded-full bg-primary-light opacity-60 group-hover:scale-150 transition-transform duration-300"></div>
+                          <div className="flex items-center gap-2 mb-3 relative z-10">
+                            <div className="w-7 h-7 rounded-lg bg-primary-light_five flex items-center justify-center shrink-0">
+                              <Icon name={metric.icon} className="w-4 h-4 text-primary" />
+                            </div>
+                            <span className="text-[13px] font-bold text-text-secondary">{metric.title}</span>
+                          </div>
+                          <div className="relative z-10 flex items-baseline gap-1">
+                            <span className="text-[24px] font-black text-primary leading-none">{metric.count}</span>
+                            <span className="text-[11px] text-text-disabled font-medium">单</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </PrdWrapper>
+
+                <div className="flex items-center justify-between shrink-0 mb-2">
+                  <span className="text-[15px] font-bold">快捷看板</span>
+                  <button onClick={() => { setTempShortcutIds([...shortcutIds]); setDrawerType('shortcuts_cfg'); }} className="w-8 h-8 bg-[#FFFFFF] rounded-full flex items-center justify-center shadow-sm tap-active">
+                    <Icon name="settings" className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {shortcutIds.length > 0 && (
+                  <PrdWrapper id="home-shortcuts" className="relative z-10 grid grid-cols-2 gap-2 mb-3 shrink-0">
+                    {shortcutIds.map((id) => {
+                      const job = ALL_JOBS.find(j => j.id === id);
+                      if (!job) return null;
+                      return (
+                        <div key={id} onClick={() => showToast(`已启动作业: ${job.name}`)} className="bg-[#FFFFFF] rounded-xl px-4 py-3 h-[68px] flex items-center justify-between cursor-pointer tap-active shadow-sm border border-transparent hover:border-primary">
+                          <span className="text-[15px] font-extrabold">{job.name}</span>
+                          <div className="w-6 h-6 bg-primary-light text-primary rounded-full flex items-center justify-center shrink-0">
+                            <Icon name="arrow-right" className="w-3 h-3" />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </PrdWrapper>
+                )}
+
+                {/* 仓库公告模块 */}
+                <PrdWrapper id="home-announcements" className="relative z-10 flex-1 min-h-0 bg-[#FFFFFF] rounded-xl shadow-sm flex flex-col overflow-hidden">
+                  <div className="px-4 py-3 border-b border-border-default shrink-0 bg-[#FFFFFF] z-10">
+                    <span className="text-[15px] font-bold text-text-primary">仓库公告</span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-3">
+                    {ANNOUNCEMENTS.map((item, index) => (
+                      <div key={item.id} className={`pt-3 ${index !== ANNOUNCEMENTS.length - 1 ? 'pb-3 border-b border-border-default' : ''}`}>
+                        <div className="text-[14px] font-bold text-text-primary mb-1">
+                          {item.date} {item.title}
+                        </div>
+                        <div className="text-[13px] text-text-secondary leading-snug">
+                          {item.content}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </PrdWrapper>
+
+              </div>
+            )}
+
+            {/* 4. 全部作业页 */}
+            {currentTab === 'jobs' && (
+              <div className="flex-1 flex flex-col bg-bg-light px-4 py-4 overflow-y-auto no-scrollbar animate-fade">
+                {['出入库', '上下架', '报表', '更多作业'].map((cat, idx) => {
+                  const filtered = ALL_JOBS.filter(j => j.category === cat);
+                  return (
+                    <PrdWrapper id={`jobs-category-${idx}`} key={cat} className="mb-6 block">
+                      <span className="text-[14px] font-bold text-text-secondary block mb-3">{cat}</span>
+                      <div className="grid grid-cols-2 gap-3">
+                        {filtered.map((job) => (
+                          <div key={job.id} onClick={() => showToast(`正在进入：${job.name}`)} className="bg-[#FFFFFF] rounded-xl px-4 py-3 h-[68px] shadow-sm tap-active flex items-center justify-between cursor-pointer border border-transparent hover:border-primary">
+                            <span className="text-[15px] font-bold block">{job.name}</span>
+                            <Icon name="chevron-right" className="w-4 h-4 text-text-disabled" />
+                          </div>
+                        ))}
+                      </div>
+                    </PrdWrapper>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* 5. 库存查询页 */}
+            {currentTab === 'inventory' && (
+              <div className="flex-1 flex flex-col bg-bg-light px-4 py-3 overflow-hidden animate-fade">
+                <PrdWrapper id="inventory-channel-switch" className="bg-[#FFFFFF] h-[44px] px-4 rounded-xl border border-border-default flex items-center justify-between cursor-pointer shrink-0 mb-3 shadow-sm block">
+                  <div onClick={() => setDrawerType('channels')} className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 bg-status-success rounded-full"></span>
+                      <span className="text-[15px] font-bold">{selectedChannel ? selectedChannel.name.split('-')[1] : '选择渠道'}</span>
+                    </div>
+                    <Icon name="chevron-down" className="w-5 h-5 text-text-secondary" />
+                  </div>
+                </PrdWrapper>
+
+                <PrdWrapper id="inventory-overview" className="shrink-0 mb-3 block">
+                  <span className="text-[15px] font-bold text-text-primary block mb-2">库存总览</span>
+                  <div className="bg-[#FFFFFF] rounded-xl shadow-sm border border-border-default py-4 flex justify-between text-center">
+                    <div className="flex-1 border-r border-border-default last:border-0">
+                      <span className="text-[13px] text-text-secondary block mb-1">实际库存</span>
+                      <span className="text-[24px] font-black text-primary leading-none">12580</span>
+                    </div>
+                    <div className="flex-1 border-r border-border-default last:border-0">
+                      <span className="text-[13px] text-text-secondary block mb-1">可用库存</span>
+                      <span className="text-[24px] font-black text-primary leading-none">8432</span>
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-[13px] text-text-secondary block mb-1">占用库存</span>
+                      <span className="text-[24px] font-black text-primary leading-none">4148</span>
+                    </div>
+                  </div>
+                </PrdWrapper>
+
+                <PrdWrapper id="inventory-list" className="flex-1 min-h-0 bg-[#FFFFFF] rounded-xl shadow-sm border border-border-default flex flex-col overflow-hidden block">
+                  <div className="p-4 border-b border-border-default shrink-0">
+                    <span className="text-[15px] font-bold text-text-primary block mb-3">库位明细</span>
+                    <div className="flex items-center bg-[#F5F5F7] rounded-lg h-[36px] px-3 border border-transparent focus-within:border-primary transition-all">
+                      <Icon name="search" className="w-4 h-4 text-text-secondary mr-2 shrink-0" />
+                      <input 
+                        type="text" 
+                        value={inventorySearch}
+                        onChange={(e) => setInventorySearch(e.target.value)}
+                        placeholder="输入库位名称搜索..."
+                        className="flex-1 bg-transparent text-[14px] text-text-primary focus:outline-none min-w-0 placeholder-[#808592]"
+                      />
+                      {inventorySearch && (
+                        <button onClick={() => setInventorySearch('')} className="text-text-disabled hover:text-text-secondary shrink-0 ml-1 p-0.5 tap-active">
+                          <Icon name="x-circle" className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1 overflow-y-auto no-scrollbar px-4" onScroll={handleInventoryScroll}>
+                    {visibleInventory.map((item) => (
+                      <div key={item.id} className="py-3 flex items-center justify-between border-b border-border-default last:border-transparent">
+                        <span className="text-[14px] font-bold text-text-primary">{item.loc}</span>
+                        <span className="text-[14px] text-text-primary">{item.qty}</span>
+                      </div>
+                    ))}
+                    {visibleInventory.length === 0 && (
+                      <div className="py-10 text-center text-text-secondary text-[13px]">暂无匹配库位数据</div>
+                    )}
+                    {visibleInventory.length > 0 && (
+                      <div className="py-4 flex justify-center items-center">
+                        <span className="text-[12px] text-text-secondary">
+                          {isInventoryLoading ? (
+                            <span className="flex items-center gap-1"><Icon name="loader" className="w-3.5 h-3.5 animate-spin" /> 加载中...</span>
+                          ) : (
+                            displayedInventoryCount >= filteredInventory.length ? '已加载全部' : '上滑加载更多'
+                          )}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </PrdWrapper>
+
+              </div>
+            )}
+
+            {/* 6. 我的 */}
+            {currentTab === 'mine' && (
+              <div className="flex-1 flex flex-col bg-bg-light px-4 py-4 justify-between overflow-y-auto no-scrollbar animate-fade">
+                <div className="space-y-4">
+                  <PrdWrapper id="mine-user-card" className="bg-[#FFFFFF] rounded-2xl p-5 shadow-sm flex items-center gap-4 block">
+                    <div className="w-14 h-14 bg-primary-light text-primary rounded-full flex items-center justify-center shrink-0">
+                      <Icon name="user" className="w-7 h-7" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[18px] font-extrabold truncate">{account || '李俊峰'}</span>
+                        <span className="text-[11px] bg-primary-light text-primary font-bold px-2 py-0.5 rounded shrink-0">
+                          {selectedChannel ? selectedChannel.name.split('-')[1] : '未选择渠道'}
+                        </span>
+                      </div>
+                      <p className="text-[13px] text-text-secondary mt-1">用户编号: FSW24 | 仓库1部</p>
+                    </div>
+                  </PrdWrapper>
+
+                  <PrdWrapper id="mine-statistics" className="grid grid-cols-2 gap-3">
+                    <div className="bg-[#FFFFFF] rounded-2xl p-4 shadow-sm text-center">
+                      <span className="text-[13px] text-text-secondary">今日完成</span>
+                      <span className="block text-[26px] font-black text-status-success mt-1">47</span>
+                    </div>
+                    <div className="bg-[#FFFFFF] rounded-2xl p-4 shadow-sm text-center">
+                      <span className="text-[13px] text-text-secondary">待办任务</span>
+                      <span className="block text-[26px] font-black text-primary mt-1">{FULL_PENDING_TASKS.length}</span>
+                    </div>
+                  </PrdWrapper>
+
+                  <PrdWrapper id="mine-settings-entry" className="bg-[#FFFFFF] rounded-2xl px-4 py-3 h-[68px] shadow-sm flex items-center justify-between tap-active cursor-pointer mt-4 block">
+                    <div onClick={() => setCurrentTab('settings')} className="flex items-center justify-between w-full">
+                      <div className="flex items-center gap-3">
+                        <Icon name="settings" className="w-5 h-5 text-text-secondary" />
+                        <span className="text-[15px] font-bold">系统设置</span>
+                      </div>
+                      <Icon name="chevron-right" className="w-5 h-5 text-text-secondary" />
+                    </div>
+                  </PrdWrapper>
+                </div>
+
+                <PrdWrapper id="mine-logout-btn" className="mt-8 pb-4 block">
+                  <button onClick={handleLogout} className="w-full h-[48px] bg-[#FFFFFF] border border-status-error text-status-error text-[15px] font-bold rounded-xl tap-active">
+                    退出登录
+                  </button>
+                </PrdWrapper>
+              </div>
+            )}
+
+            {/* 7. 系统设置页 */}
+            {currentTab === 'settings' && (
+              <div className="flex-1 flex flex-col bg-bg-light overflow-hidden animate-fade">
+                <div className="h-[44px] bg-[#FFFFFF] px-4 flex items-center justify-between border-b border-border-default shrink-0 z-10">
+                  <button onClick={() => setCurrentTab('mine')} className="p-2 -ml-2 tap-active text-text-secondary">
+                    <Icon name="chevron-left" className="w-6 h-6" />
+                  </button>
+                  <span className="text-[16px] font-bold">基础设置</span>
+                  <div className="w-6 h-6"></div>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto px-4 py-4">
+                  <span className="text-[13px] font-bold text-text-primary block mb-3 pl-1">基础设置</span>
+                  
+                  <PrdWrapper id="settings-list-area" className="bg-[#FFFFFF] rounded-xl border border-border-default overflow-hidden block">
+                    <div onClick={() => setInputModal({ show: true, key: 'packInterval', title: '装箱自动暂存间隔：', value: settings.packInterval })} className="px-4 py-3 h-[68px] flex items-center justify-between border-b border-border-default tap-active cursor-pointer">
+                      <span className="text-[14px]">装箱自动暂存间隔（最小15秒）</span>
+                      <div className="flex items-center gap-1 text-text-secondary">
+                        <span className="text-[14px] text-text-primary">{settings.packInterval} 秒</span>
+                        <Icon name="chevron-right" className="w-4 h-4" />
+                      </div>
+                    </div>
+                    
+                    <div onClick={() => setInputModal({ show: true, key: 'putawayInterval', title: '上架自动暂存间隔：', value: settings.putawayInterval })} className="px-4 py-3 h-[68px] flex items-center justify-between border-b border-border-default tap-active cursor-pointer">
+                      <span className="text-[14px]">上架自动暂存间隔（最小15秒）</span>
+                      <div className="flex items-center gap-1 text-text-secondary">
+                        <span className="text-[14px] text-text-primary">{settings.putawayInterval} 秒</span>
+                        <Icon name="chevron-right" className="w-4 h-4" />
+                      </div>
+                    </div>
+                    
+                    <div onClick={() => setInputModal({ show: true, key: 'pickupInterval', title: '下架自动暂存间隔：', value: settings.pickupInterval })} className="px-4 py-3 h-[68px] flex items-center justify-between tap-active cursor-pointer">
+                      <span className="text-[14px]">下架自动暂存间隔（最小15秒）</span>
+                      <div className="flex items-center gap-1 text-text-secondary">
+                        <span className="text-[14px] text-text-primary">{settings.pickupInterval} 秒</span>
+                        <Icon name="chevron-right" className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </PrdWrapper>
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* === 底部 Tab 导航 === */}
+          {['home', 'jobs', 'inventory', 'mine'].includes(currentTab) && (
+            <PrdWrapper id="bottom-tab-bar" className="h-[60px] bg-[#FFFFFF] border-t border-border-default grid grid-cols-4 shrink-0 pb-safe z-[40]">
+              {[
+                { id: 'home', icon: 'layout-grid', label: '首页' },
+                { id: 'jobs', icon: 'box', label: '作业' },
+                { id: 'inventory', icon: 'database', label: '库存' },
+                { id: 'mine', icon: 'user', label: '我的' }
+              ].map(tab => (
+                <button 
+                  key={tab.id}
+                  onClick={() => setCurrentTab(tab.id)}
+                  className={`flex flex-col items-center justify-center gap-1 tap-active ${currentTab === tab.id ? 'text-primary' : 'text-text-disabled'}`}
+                >
+                  <Icon name={tab.icon} className="w-6 h-6" />
+                  <span className="text-[11px] font-bold">{tab.label}</span>
+                </button>
+              ))}
+            </PrdWrapper>
+          )}
+
+          {/* ========================================================= */}
+          {/* 业务 Modals，遮罩层外，包裹内容区供 PRD 模式使用           */}
+          {/* ========================================================= */}
+          
+          {/* 渠道切换抽屉 */}
+          {drawerType === 'channels' && (
+            <div className="absolute inset-0 bg-black/40 z-40 animate-fade flex flex-col justify-end">
+              <div className="absolute inset-0" onClick={() => setDrawerType(null)}></div>
+              <PrdWrapper id="channel-drawer" className="relative z-50 bg-[#FFFFFF] rounded-t-[20px] p-5 max-h-[85%] flex flex-col animate-slideUp">
+                <div className="flex items-center justify-between pb-4 border-b border-border-default">
+                  <span className="text-[16px] font-bold">切换操作渠道</span>
+                  <button onClick={() => setDrawerType(null)}><Icon name="x" className="w-6 h-6 text-text-secondary" /></button>
+                </div>
+                <div className="overflow-y-auto no-scrollbar py-4 space-y-3">
+                  {INITIAL_CHANNELS.map((ch) => {
+                    const isCurrent = selectedChannel?.code === ch.code;
+                    return (
+                      <div key={ch.code} onClick={() => { 
+                          handleSelectChannel(ch); setDrawerType(null); setInventorySearch(''); setDisplayedInventoryCount(15);
+                          showToast(`已切换至: ${ch.name.split('-')[1]}`, 'success'); 
+                        }} 
+                        className={`px-4 py-3 h-[68px] rounded-xl flex items-center justify-between border ${isCurrent ? 'bg-primary-light_five border-primary text-primary' : 'border-border-default'}`}>
+                        <span className="text-[15px] font-bold">{ch.name}</span>
+                        {isCurrent && <Icon name="check" className="w-5 h-5 text-primary" />}
+                      </div>
+                    );
+                  })}
+                </div>
+              </PrdWrapper>
+            </div>
+          )}
+
+          {/* 指标明细抽屉 */}
+          {drawerType === 'metrics' && activeMetricDetail && (
+            <div className="absolute inset-0 bg-black/40 z-40 animate-fade flex flex-col justify-end">
+              <div className="absolute inset-0" onClick={() => setDrawerType(null)}></div>
+              <PrdWrapper id="metrics-drawer" className="relative z-50 bg-[#F5F5F7] rounded-t-[20px] flex flex-col max-h-[90%] h-[85%] animate-slideUp">
+                <div className="bg-[#FFFFFF] p-4 rounded-t-[20px] flex items-center justify-between border-b border-border-default shrink-0">
+                  <span className="text-[16px] font-bold">{activeMetricDetail.title} 明细</span>
+                  <button onClick={() => setDrawerType(null)}><Icon name="x" className="w-6 h-6 text-text-secondary" /></button>
+                </div>
+                <div className="bg-[#FFFFFF] flex overflow-x-auto no-scrollbar border-b border-border-default shrink-0">
+                  {activeMetricDetail.group.map((g, idx) => (
+                    <button key={idx}
+                      onClick={() => { setActiveTabIdx(idx); setDisplayedTasks(generateTasksForTab(activeMetricDetail.title, g.label, Math.min(15, g.val), 0)); }}
+                      className={`px-4 py-3 text-[14px] font-bold border-b-2 whitespace-nowrap transition-colors ${activeTabIdx === idx ? 'text-primary border-primary' : 'text-text-secondary border-transparent'}`}
+                    >
+                      {g.label}({g.val})
+                    </button>
+                  ))}
+                </div>
+                <div className="flex-1 overflow-y-auto no-scrollbar p-4 space-y-3" onScroll={handleTaskScroll}>
+                  {displayedTasks.map(task => (
+                    <div key={task.id} onClick={() => { setDrawerType(null); showToast(`即将前往处理：${task.title}`, 'success'); }} className="bg-[#FFFFFF] rounded-xl p-4 shadow-sm border border-border-default hover:border-primary cursor-pointer tap-active">
+                      <div className="flex justify-between items-start mb-2">
+                        <span className="text-[14px] font-bold text-text-primary leading-tight flex-1 pr-2 truncate">{task.title}</span>
+                        <span className="text-[11px] font-bold px-2 py-0.5 rounded-md shrink-0 bg-primary-light text-primary">{task.status}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-[12px] text-text-secondary">
+                        <Icon name="clock" className="w-3.5 h-3.5" />
+                        <span>{task.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="py-4 flex justify-center items-center">
+                    <span className="text-[12px] text-text-secondary">
+                      {isLoadingMore ? <span className="flex items-center gap-1"><Icon name="loader" className="w-3.5 h-3.5 animate-spin" /> 加载中...</span> 
+                                    : (displayedTasks.length >= activeMetricDetail.group[activeTabIdx].val ? '已加载全部' : '上滑加载更多')}
+                    </span>
+                  </div>
+                </div>
+              </PrdWrapper>
+            </div>
+          )}
+
+          {/* 快捷配置抽屉 */}
+          {drawerType === 'shortcuts_cfg' && (
+            <div className="absolute inset-0 bg-black/40 z-40 animate-fade flex flex-col justify-end">
+              <div className="absolute inset-0" onClick={() => setDrawerType(null)}></div>
+              <PrdWrapper id="shortcuts-cfg-drawer" className="relative z-50 bg-[#F5F5F7] rounded-t-[20px] flex flex-col max-h-[90%] animate-slideUp">
+                <div className="bg-[#FFFFFF] p-4 rounded-t-[20px] flex items-center justify-between shadow-sm z-10 shrink-0">
+                  <div>
+                    <span className="text-[16px] font-bold block">配置快捷作业</span>
+                    <span className="text-[12px] text-text-secondary">已选 {tempShortcutIds.length}/4 项</span>
+                  </div>
+                  <button onClick={() => setDrawerType(null)}><Icon name="x" className="w-6 h-6 text-text-secondary" /></button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                  <div>
+                    <span className="text-[13px] font-bold text-text-secondary mb-3 block">当前工作台显示 (支持拖动顺序)</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      {tempShortcutIds.length === 0 ? (
+                        <div className="col-span-2 py-6 text-center text-[13px] text-text-secondary border border-dashed border-border-default rounded-xl bg-[#FFFFFF] flex flex-col items-center justify-center gap-2">
+                          <Icon name="info" className="w-5 h-5 text-text-disabled" />
+                          <span>暂无选中的快捷作业（保存后将在首页隐藏快捷看板）</span>
+                        </div>
+                      ) : (
+                        tempShortcutIds.map((id, index) => {
+                          const j = ALL_JOBS.find(x => x.id === id);
+                          return (
+                            <div 
+                              key={id} draggable onDragStart={() => setDraggedItem(index)} onDragOver={(e) => e.preventDefault()}
+                              onDrop={() => {
+                                if (draggedItem === null) return;
+                                const updated = [...tempShortcutIds];
+                                const temp = updated[draggedItem];
+                                updated[draggedItem] = updated[index]; updated[index] = temp;
+                                setTempShortcutIds(updated); setDraggedItem(null);
+                              }}
+                              className="bg-[#FFFFFF] p-3 rounded-xl border border-primary text-primary flex items-center justify-between h-[68px]"
+                            >
+                              <span className="text-[14px] font-bold">{j?.name}</span>
+                              <button onClick={() => setTempShortcutIds(prev => prev.filter(x => x !== id))}>
+                                <Icon name="minus-circle" className="w-5 h-5" />
+                              </button>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-[13px] font-bold text-text-secondary mb-3 block">可选作业</span>
+                    <div className="grid grid-cols-2 gap-3">
+                      {ALL_JOBS.map((job) => {
+                        const isSelected = tempShortcutIds.includes(job.id);
+                        if (isSelected) return null;
+                        const disabled = tempShortcutIds.length >= 4;
+                        return (
+                          <button key={job.id} disabled={disabled} onClick={() => toggleShortcutSelection(job.id)}
+                            className={`bg-[#FFFFFF] p-3 rounded-xl text-[14px] font-medium text-left flex items-center justify-between h-[68px] ${disabled ? 'opacity-50' : ''}`}
+                          >
+                            {job.name} <Icon name="plus-circle" className="w-5 h-5 text-text-secondary" />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-[#FFFFFF] p-4 shrink-0 shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+                  <button onClick={saveShortcutConfig} className="w-full h-[44px] bg-primary text-white text-[15px] font-bold rounded-xl">保 存</button>
+                </div>
+              </PrdWrapper>
+            </div>
+          )}
+
+          {/* 文本输入交互浮窗 */}
+          {inputModal.show && (
+            <div className="absolute inset-0 bg-black/40 z-50 flex items-center justify-center p-6 animate-fade">
+              <PrdWrapper id="settings-input-modal" className="relative z-10 w-[280px]">
+                <div className="bg-[#FFFFFF] rounded-xl overflow-hidden animate-scale w-full">
+                  <div className="p-6">
+                    <h4 className="text-[15px] font-bold text-text-primary mb-4">{inputModal.title}</h4>
+                    <input 
+                      type="number" 
+                      value={inputModal.value}
+                      onChange={(e) => setInputModal({...inputModal, value: e.target.value})}
+                      placeholder="最小15s"
+                      className="w-full text-[14px] text-text-primary border-b border-border-default pb-2 focus:outline-none focus:border-primary transition-colors bg-transparent"
+                      autoFocus
+                    />
+                  </div>
+                  <div className="flex border-t border-border-default h-[44px]">
+                    <button onClick={() => setInputModal({ show: false, key: '', title: '', value: '' })} className="flex-1 text-[14px] border-r border-border-default text-text-primary hover:bg-bg-light">取消</button>
+                    <button onClick={() => {
+                        const finalValue = parseInt(inputModal.value) < 15 ? '15' : (inputModal.value || '15');
+                        setSettings({...settings, [inputModal.key]: finalValue});
+                        setInputModal({ show: false, key: '', title: '', value: '' });
+                        showToast('设置已保存', 'success');
+                      }} 
+                      className="flex-1 text-[14px] text-primary hover:bg-bg-light"
+                    >确定</button>
+                  </div>
+                </div>
+              </PrdWrapper>
+            </div>
+          )}
+
+          {/* 退出确认对话框 */}
+          {dialog.show && (
+            <div className="absolute inset-0 bg-black/40 z-50 flex items-center justify-center p-6 animate-fade">
+              <PrdWrapper id="global-dialog-modal" className="relative z-10 w-[280px]">
+                <div className="bg-[#FFFFFF] w-full rounded-2xl overflow-hidden animate-scale">
+                  <div className="p-6 text-center">
+                    <h4 className="text-[18px] font-bold mb-2">{dialog.title}</h4>
+                    <p className="text-[14px] text-text-secondary">{dialog.content}</p>
+                  </div>
+                  <div className="flex border-t border-border-default h-[50px]">
+                    <button onClick={() => setDialog({ show: false })} className="flex-1 text-[16px] border-r border-border-default text-text-primary">取消</button>
+                    <button onClick={dialog.onConfirm} className="flex-1 text-[16px] font-bold text-primary">确定</button>
+                  </div>
+                </div>
+              </PrdWrapper>
+            </div>
+          )}
+
+          {/* Toast */}
+          {toast.show && (
+            <div className="absolute inset-x-0 bottom-24 flex justify-center z-50 animate-fade pointer-events-none">
+              <div className={`px-4 py-2.5 rounded-lg shadow-lg text-[14px] font-bold flex items-center gap-2 ${toast.type === 'error' ? 'bg-status-error text-white' : toast.type === 'warning' ? 'bg-status-warning text-white' : toast.type === 'success' ? 'bg-status-success text-white' : 'bg-text-primary text-white'}`}>
+                <span>{toast.text}</span>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================= */}
+          {/* PRD 编辑器侧边抽屉 Portal                                 */}
+          {/* ========================================================= */}
+          {ReactDOM.createPortal(
+            <>
+              <div className={`fixed inset-0 bg-black/40 z-[9990] transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={closePrdDrawer}></div>
+              <div className={`fixed right-0 top-0 bottom-0 bg-[#F5F5F7] shadow-2xl z-[9995] transition-transform duration-300 transform flex flex-col ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                style={{ width: `${prdDrawerWidth}px`, maxWidth: '90vw' }}>
+                
+                {/* 拖拽拉伸条 */}
+                <div className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-10 hover:bg-[#FF9500] hover:opacity-60 transition-opacity group"
+                  onMouseDown={startResize}>
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-1 h-12 bg-gray-300 rounded-full group-hover:bg-[#FF9500] transition-colors"></div>
+                </div>
+                
+                {/* 顶部栏 */}
+                <div className="px-6 py-4 border-b border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
+                  <span className="text-[18px] font-semibold text-[#333]">产品规则说明</span>
+                  <div className="w-8 h-8 rounded-full bg-[#F5F5F7] flex items-center justify-center cursor-pointer active:scale-95 hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>
+                    <i className="ph ph-x text-[16px] text-[#666]"></i>
+                  </div>
+                </div>
+
+                {/* Badge Pill Switch Bar */}
+                <BadgePillBar
+                  badges={Object.keys(prdDocs).map(id => ({ id, order: prdDocs[id].order })).sort((a, b) => a.order - b.order)}
+                  activeId={activePrdId}
+                  onSelect={(id) => {
+                    setActivePrdId(id); setIsConfirmingDelete(false); setShowDiscardConfirm(false);
+                    if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
+                  }}
+                  scrollRef={badgePillScrollRef}
+                />
+
+                {/* 内容编辑区 */}
+                <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
+                  {/* 标题 */}
+                  <div className="flex flex-col gap-2 flex-shrink-0">
+                    <label className="text-[14px] font-medium text-[#808592] ml-1">功能模块名称</label>
+                    {isEditing ? (
+                      <input className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl outline-none focus:border-[#FF9500] focus:ring-2 focus:ring-[rgba(255,149,0,0.1)] bg-white font-medium text-[#353D51] transition-all"
+                        value={editingDoc?.title || ''} onChange={e => handlePrdChange('title', e.target.value)} />
+                    ) : (
+                      <div className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl bg-white font-medium text-[#353D51] min-h-[48px]">
+                        {editingDoc?.title || '未命名'}
+                      </div>
+                    )}
+                  </div>
+                  {/* 富文本内容 */}
+                  <div className="flex flex-col gap-2 flex-1 min-h-[300px]">
+                    <label className="text-[14px] font-medium text-[#808592] ml-1">交互与规则说明（富文本）</label>
+                    {isEditing ? (
+                      <RichTextEditor value={editingDoc?.content || ''} onChange={val => handlePrdChange('content', val)} activeId={activePrdId} />
+                    ) : (
+                      <div className="flex-1 p-3 border border-[#E8E8E8] rounded-lg bg-white shadow-sm overflow-y-auto rich-text-content text-[14px] leading-relaxed text-[#353D51]"
+                        dangerouslySetInnerHTML={{ __html: editingDoc?.content || '' }} />
+                    )}
+                  </div>
+                </div>
+
+                {/* 底部操作区 */}
+                <div className="px-6 py-4 border-t border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
+                  {isEditing ? (
+                     <>
+                       {showDiscardConfirm ? (
+                         <div className="flex items-center gap-2 fade-in">
+                           <span className="text-[13px] font-medium text-orange-500">有未保存的内容</span>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setShowDiscardConfirm(false)}>返回编辑</button>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={discardChanges}>放弃修改</button>
+                         </div>
+                       ) : isConfirmingDelete ? (
+                         <div className="flex items-center gap-2 fade-in">
+                           <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
+                         </div>
+                       ) : prdDocs[activePrdId] ? (
+                         <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
+                           <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
+                         </button>
+                       ) : <div></div>}
+                       <div className="flex items-center gap-3">
+                         <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>取消</button>
+                         <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={confirmPrdSave}>保存</button>
+                       </div>
+                     </>
+                  ) : (
+                     <>
+                       {prdDocs[activePrdId] && !isConfirmingDelete ? (
+                         <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
+                           <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
+                         </button>
+                       ) : isConfirmingDelete ? (
+                         <div className="flex items-center gap-2 fade-in">
+                           <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
+                           <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
+                         </div>
+                       ) : <div></div>}
+                       <div className="flex items-center gap-3">
+                         <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>关闭</button>
+                         <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={() => setIsEditing(true)}>
+                           <i className="ph-fill ph-note-pencil mr-1 text-[16px]"></i>编辑
+                         </button>
+                       </div>
+                     </>
+                  )}
+                </div>
+              </div>
+            </>,
+            document.body
+          )}
+
+        </div>
+        </PrdContext.Provider>
+      );
+    }
+
+    try {
+      const container = document.getElementById('prototype-container');
+      if (container) {
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+      }
+    } catch (e) {
+      document.getElementById('prototype-container').innerHTML = 
+        `<div style="padding: 20px; color: red;">组件渲染异常: ${e.message}</div>`;
+      console.error("React Render Error:", e);
+    }
+  </script>
+</body>
+</html>
