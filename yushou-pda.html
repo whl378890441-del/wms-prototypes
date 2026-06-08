@@ -7,12 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@4..32,400;4..32,500;4..32,600;4..32,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- 导入 React 18 & Babel & Tailwind CSS & Phosphor Icons CDN -->
+<!-- 导入 React 18 & Babel & Tailwind CSS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.3/babel.min.js"></script>
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/@phosphor-icons/web"></script>
 
 <style>
 /* ========== 完美保留并兼容原有 CSS 样式 ========== */
@@ -246,19 +245,6 @@ html, body {
   font-weight: 600;
   margin-bottom: 8px;
 }
-.search-field-input {
-  width: 100%;
-  border: none;
-  border-bottom: 1.5px solid var(--border);
-  padding: 8px 0;
-  font-size: 14px;
-  color: var(--text-primary);
-  background: transparent;
-  outline: none;
-  transition: border-color 0.2s ease;
-  font-family: inherit;
-}
-.search-field-input:focus { border-bottom-color: var(--primary); }
 .search-field-select {
   width: 100%;
   border-bottom: 1.5px solid var(--border);
@@ -272,10 +258,6 @@ html, body {
 }
 .search-field-select .placeholder { color: var(--text-muted); }
 .search-field-select .form-arrow { color: var(--text-muted); font-size: 16px; }
-
-.date-range-row { display: flex; align-items: center; gap: 8px; }
-.date-range-row .search-field-input { flex: 1; font-size: 13px; padding: 8px 0; }
-.date-range-row span { color: var(--text-muted); font-size: 12px; }
 
 .filter-chips-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
 .filter-chip-option {
@@ -396,7 +378,6 @@ html, body {
   display: inline-flex; align-items: center; gap: 3px; padding: 3px 5px; 
   border-radius: 4px; font-size: 10px; font-weight: 600; line-height: 1.2; white-space: nowrap; flex-shrink: 0;
 }
-.tag svg { width: 11px; height: 11px; }
 .tag-attachment { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
 
 /* Hide arrows in input[type=number] */
@@ -417,15 +398,7 @@ html, body {
   overflow: hidden;
 }
 
-/* 附件弹出面板网格布局 */
-.attachment-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 16px;
-  max-height: 50vh;
-  overflow-y: auto;
-}
+/* 附件缩略图 */
 .attachment-thumb {
   aspect-ratio: 1;
   border-radius: 8px;
@@ -559,79 +532,14 @@ html, body {
   width: 44px; height: 44px; background: #FFFFFF; border-radius: 10px; display: flex; align-items: center; justify-content: center;
   box-shadow: 0 2px 6px rgba(60,91,242,0.1);
 }
-
-@keyframes prdPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.7); }
-  50% { transform: scale(1.05); box-shadow: 0 0 0 6px rgba(255, 149, 0, 0); }
-}
-.rich-text-content ul { list-style-type: disc; padding-left: 1.2rem; margin: 0.3em 0; }
-.rich-text-content ol { list-style-type: decimal; padding-left: 1.2rem; margin: 0.3em 0; }
-.rich-text-content b, .rich-text-content strong { font-weight: 700; color: #111; }
-.rich-text-content i, .rich-text-content em { font-style: italic; }
-.rich-text-content p { margin-bottom: 0.3em; }
-.rich-text-content table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 13px; }
-.rich-text-content th, .rich-text-content td { border: 1px solid #D1D5DB; padding: 6px 8px; text-align: left; min-width: 50px; word-break: break-all; }
-.rich-text-content th { background-color: #F3F4F6; font-weight: 600; }
-.prd-badge { animation: prdPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-
-body.prd-resizing { cursor: col-resize !important; user-select: none; }
-body.prd-resizing * { cursor: col-resize !important; }
-
-.badge-pill-scroll { overflow-x: auto; flex: 1; display: flex; gap: 6px; scrollbar-width: none; -ms-overflow-style: none; }
-.badge-pill-scroll::-webkit-scrollbar { display: none; }
-.badge-arrow { width: 20px; height: 24px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 14px; flex-shrink: 0; cursor: pointer; transition: color 0.15s; }
-.badge-arrow:hover { color: #374151; }
-.badge-arrow.hidden { visibility: hidden; pointer-events: none; }
-.badge-pill { padding: 4px 12px; border-radius: 16px; font-size: 12px; white-space: nowrap; flex-shrink: 0; cursor: pointer; background: #f3f4f6; color: #374151; border: 1.5px solid transparent; transition: all 0.15s; }
-.badge-pill:hover { background: #e5e7eb; }
-.badge-pill.active { background: #fa8c16; color: #fff; border-color: #fa8c16; }
 </style>
 </head>
 <body>
-<script type="application/json" id="prd-embedded-data">
-{
-  "list-card": {
-    "order": 1,
-    "title": "列表页 - 预收单卡片展示",
-    "content": "<h3>业务规则</h3><ul><li><b>数据范围：</b>仅展示状态为<b>「已完成」</b>的预收单单据</li><li><b>排序规则：</b>按单据日期倒序排列，最新单据展示在顶部</li><li><b>筛选联动：</b>列表数据受列表页筛选功能（见规则②）共同控制，条件变更时实时刷新</li></ul><h3>卡片字段展示</h3><table><thead><tr><th>字段</th><th>展示规则</th><th>说明</th></tr></thead><tbody><tr><td>日期</td><td>大字重展示</td><td>格式：YYYY-MM-DD</td></tr><tr><td>单据类型+关联单号</td><td>组合展示</td><td>如「采购到货通知单：PO20260415001」</td></tr><tr><td>供应商</td><td>标签+值</td><td>仅「采购到货通知单」展示</td></tr><tr><td>发货渠道</td><td>标签+值</td><td>仅「发货单」展示</td></tr><tr><td>操作人</td><td>标签+值</td><td>当前登录用户</td></tr><tr><td>箱数</td><td>大字重数字+单位</td><td>如「24箱」</td></tr><tr><td>备注</td><td>两行截断</td><td>超两行自动折叠</td></tr><tr><td>附件按钮</td><td>有附件时显示</td><td>文案：附件/附件(N)</td></tr><tr><td>打印按钮</td><td>始终显示</td><td>点击下发打印指令</td></tr></tbody></table><p><b>注：</b>卡片字段取值逻辑详见规则③（新建/编辑页表单字段）。</p>"
-  },
-  "list-filter": {
-    "order": 2,
-    "title": "列表页 - 筛选功能",
-    "content": "<h3>一、吸顶日期范围筛选</h3><ul><li><b>默认值：</b><b>当前日期往前推一个月</b>（如2026-04-29 至 2026-05-29）</li><li><b>展示位置：</b>列表页顶部吸顶区域，始终可见</li><li><b>生效方式：</b>修改日期后<b>实时生效</b>，立即刷新列表卡片数据</li></ul><h3>二、高级检索与筛选面板</h3><ul><li><b>入口：</b>列表页右上角筛选图标按钮</li><li><b>面板展示：</b>从右侧滑入，宽度占屏幕88%</li><li><b>联动关系：</b>面板内日期条件与吸顶日期筛选同步</li></ul><h3>筛选条件说明</h3><table><thead><tr><th>筛选项</th><th>类型</th><th>选项来源</th><th>说明</th></tr></thead><tbody><tr><td>单据类型</td><td>单选</td><td>系统预设</td><td>采购到货通知单/发货单</td></tr><tr><td>发货渠道</td><td>单选</td><td>系统发货渠道主数据</td><td>华南电商一区主发仓/华北中转仓等</td></tr><tr><td>供应商</td><td>单选</td><td>系统供应商主数据</td><td>上海鑫源贸易/深圳优品供应链等</td></tr><tr><td>操作人</td><td>单选</td><td>系统有权限用户列表</td><td>张三/李四/王五/赵六等</td></tr><tr><td>存在附件</td><td><b>单选</b></td><td>是/否</td><td>芯片按钮选择</td></tr></tbody></table><h3>存在附件筛选逻辑</h3><ul><li>选择<b>「是」</b>：仅展示附件数量>0的单据</li><li>选择<b>「否」</b>：仅展示附件数量=0的单据</li></ul><h3>操作按钮</h3><ul><li><b>重置：</b>恢复默认日期区间，清空所有筛选条件</li><li><b>确定：</b>应用当前筛选条件，关闭面板，列表页实时刷新</li></ul>"
-  },
-  "edit-form-basic-info": {
-    "order": 3,
-    "title": "新建/编辑页 - 表单字段与交互",
-    "content": "<h3>表单字段说明</h3><table><thead><tr><th>字段</th><th>字段类型</th><th>必填</th><th>默认值</th><th>可编辑</th><th>业务规则</th><th>交互逻辑</th><th>取值来源</th></tr></thead><tbody><tr><td>日期</td><td>日期</td><td>否</td><td>系统当前日期</td><td>是</td><td>格式YYYY-MM-DD</td><td>日期选择器</td><td>系统当前日期</td></tr><tr><td>单据类型</td><td>枚举</td><td><b>是</b></td><td>空</td><td>是</td><td>采购到货通知单/发货单，决定下方展示字段</td><td>底部弹出选择面板，切换时清空关联单号及带出字段</td><td>用户选择</td></tr><tr><td>关联单号</td><td>文本</td><td><b>是</b></td><td>空</td><td>是</td><td>必须先选单据类型；根据单据类型过滤可选项；选择后自动带出供应商/发货渠道；切换单据类型清空已选</td><td>底部弹出选择面板</td><td>已审核的单据，且处理状态为未入库/已发货</td></tr><tr><td>供应商</td><td>文本</td><td>否</td><td>关联单带出</td><td><b>否</b></td><td>仅采购到货通知单时展示；关联单号带出，不可编辑</td><td>只读展示</td><td>关联单号对应的供应商主数据</td></tr><tr><td>发货渠道</td><td>文本</td><td>否</td><td>关联单带出</td><td><b>否</b></td><td>仅发货单时展示；关联单号带出，不可编辑</td><td>只读展示</td><td>关联单号对应的发货渠道主数据</td></tr><tr><td>箱数</td><td>整数</td><td><b>是</b></td><td>1（手动）/动态（扫码）</td><td>是</td><td>整数≥1；扫码时根据上游单据实际箱数动态带入</td><td>步进器+/-操作，支持手动输入</td><td>用户输入或扫码带入</td></tr><tr><td>操作人</td><td>文本</td><td>否</td><td>当前登录用户</td><td>是</td><td>默认当前登录用户；可切换其他有权限操作人</td><td>底部弹出选择面板</td><td>系统有权限用户列表</td></tr><tr><td>备注</td><td>文本</td><td>否</td><td>空</td><td>是</td><td>文本输入，无字数限制</td><td>文本输入框</td><td>用户输入</td></tr></tbody></table><h3><br></h3><h3>提交校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>单据类型</td><td>不能为空</td><td>「请选择单据类型」</td></tr><tr><td>关联单号</td><td>不能为空</td><td>「关联单号必填」</td></tr><tr><td>箱数</td><td>必须≥1的整数</td><td>「请输入有效箱数」</td></tr></tbody></table><h3><br></h3><h3>底部操作</h3><table><thead><tr><th>操作按钮</th><th>点击行为</th></tr></thead><tbody><tr><td>取消</td><td>检查未保存内容，有则弹出二次确认「确定放弃编辑？返回列表页」；无则直接返回</td></tr><tr><td>提交</td><td>校验通过后创建/更新预收单，返回列表页</td></tr></tbody></table>"
-  },
-  "edit-scan-barcode": {
-    "order": 4,
-    "title": "新建/编辑页 - 扫码赋值映射",
-    "content": "<h3>业务规则</h3><ul><li><b>输入框功能：</b>支持手动输入条码号，或点击扫描icon唤醒PDA扫描枪</li><li><b>扫码触发逻辑：</b><ol><li>点击扫描icon → 唤醒移动端/PDA扫描功能</li><li>扫描成功后，读取条码值</li><li>根据条码值查询上游单据信息</li><li>自动填充页面字段</li></ol></li></ul><h3>扫码赋值映射</h3><table><thead><tr><th>页面字段</th><th>赋值来源</th><th>说明</th></tr></thead><tbody><tr><td>单据类型</td><td>条码关联单据类型</td><td>自动带入</td></tr><tr><td>关联单号</td><td>条码关联上游单号</td><td>自动带入</td></tr><tr><td>供应商</td><td>条码关联供应商信息</td><td>仅采购到货通知单时带出</td></tr><tr><td>发货渠道</td><td>条码关联发货渠道</td><td>仅发货单时带出</td></tr><tr><td>箱数</td><td><b>上游单据实际箱数</b></td><td><b>根据条码关联的上游单据实际箱数动态带入，用户可手动修改</b></td></tr><tr><td>备注</td><td>不带出</td><td>用户自行输入，扫码不自动填充</td></tr></tbody></table><h3>异常处理</h3><ul><li>扫码失败/条码不存在：Toast提示「未找到关联单据，请手动填写」</li><li>重复扫码：Toast提示「该单据已录入」</li></ul>"
-  },
-  "edit-form-upload": {
-    "order": 5,
-    "title": "新建/编辑页 - 附件上传",
-    "content": "<h3>业务规则</h3><ul><li><b>入口位置：</b>新建/编辑页底部「+上传附件」热区</li><li><b>上传方式：</b>点击上传热区弹出选择弹窗，支持：<ul><li><b>拍照上传：</b>调用设备摄像头直接拍摄</li><li><b>从相册选择：</b>从设备相册中选取已有图片</li></ul></li></ul><h3>交互逻辑</h3><ul><li><b>已上传附件展示：</b>以缩略图网格形式展示</li><li><b>预览：</b>点击已上传的附件图片 → 打开全屏预览</li><li><b>删除：</b>已上传附件右上角显示✕删除按钮，点击即可移除</li></ul><h3>取值逻辑</h3><table><thead><tr><th>字段</th><th>取值来源</th><th>说明</th></tr></thead><tbody><tr><td>附件列表</td><td>预收单.附件列表</td><td>图片URL数组，新建时为空</td></tr></tbody></table>"
-  },
-  "detail-page": {
-    "order": 6,
-    "title": "详情页 - 只读展示",
-    "content": "<h3>业务规则</h3><ul><li><b>页面状态：</b><b>只读状态</b>，所有字段不可编辑</li><li><b>字段对应：</b>与新建/编辑页字段（见规则③）一一对应</li></ul><h3>展示字段</h3><table><thead><tr><th>字段</th><th>展示规则</th><th>说明</th></tr></thead><tbody><tr><td>日期</td><td>直接展示</td><td>格式：YYYY-MM-DD</td></tr><tr><td>单据类型</td><td>直接展示</td><td>采购到货通知单/发货单</td></tr><tr><td>关联单号</td><td>直接展示</td><td>上游单据编号</td></tr><tr><td>供应商</td><td>仅采购到货通知单展示</td><td>无则显示「-」</td></tr><tr><td>发货渠道</td><td>仅发货单展示</td><td>无则显示「-」</td></tr><tr><td>箱数</td><td>直接展示</td><td>整数 + 「箱」单位</td></tr><tr><td>操作人</td><td>直接展示</td><td>无则显示「-」</td></tr><tr><td>备注</td><td>直接展示</td><td>无则显示「-」，支持换行</td></tr></tbody></table><h3>附件查看</h3><ul><li><b>展示方式：</b>以缩略图网格形式展示该预收单关联的所有附件图片</li><li><b>无附件状态：</b>显示「暂无附件」提示文字</li><li><b>图片预览：</b>点击任意附件图片 → 打开全屏图片预览</li></ul><h3>底部操作</h3><table><thead><tr><th>操作按钮</th><th>点击行为</th></tr></thead><tbody><tr><td>打印预收单</td><td>下发打印指令</td></tr><tr><td>编辑</td><td>携带当前单据数据进入编辑态（新建/编辑页）</td></tr></tbody></table>"
-  },
-  "submit-delete-validation": {
-    "order": 7,
-    "title": "预收单 - 提交与删除校验逻辑",
-    "content": "<h3>字段说明</h3><p>上级单据（采购到货通知单/发货单）新增字段：</p><ul><li><b>是否预收：</b>布尔字段，默认值为「否」</li></ul><h3><br></h3><h3>保存校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>是否预收</td><td>关联上级单据的「是否预收」字段值为「是」</td><td>「该单据已被其他预收单关联，不允许重复预收」</td></tr></tbody></table><h3>保存成功后回写</h3><ul><li><b>触发时机：</b>预收单保存成功</li><li><b>回写动作：</b>将关联上级单据的「是否预收」字段从「否」修改为「是」</li></ul><h3><br></h3><h3>删除校验</h3><table><thead><tr><th>校验项</th><th>规则</th><th>错误提示</th></tr></thead><tbody><tr><td>处理状态+审核状态</td><td>关联单据的「处理状态」为「已入库」或「已收货」<b>且</b>关联单据已审核</td><td>「该单据已入库/已收货且已审核，不允许删除预收单」</td></tr></tbody></table><ul><li><b>允许删除条件：</b>其他情况均允许删除</li></ul><h3>删除成功后回写</h3><ul><li><b>触发时机：</b>预收单删除成功</li><li><b>回写动作：</b>将关联上级单据的「是否预收」字段回写为「否」</li></ul>"
-  }
-}
-</script>
 
 <div id="root"></div>
 
 <script type="text/babel">
-const { useState, useEffect, useRef, useMemo, useLayoutEffect } = React;
+const { useState, useEffect, useRef, useMemo } = React;
 
 // 格式化日期辅助函数
 const formatDate = (d) => {
@@ -653,20 +561,24 @@ const getDaysAgoStr = (days) => {
   return formatDate(d);
 };
 
-// ========== 更新后的单据模型：适应所有的改动并动态使用当前日期 ==========
+// ========== 更新后的单据模型：恢复附件类型的分离 ==========
 const INITIAL_DOCS = [
   {
     docNo: '20260428-1', 
-    date: getTodayStr(), // 动态生成确保都在筛选范围内
+    date: getTodayStr(), 
     docType: '采购到货通知单', 
     refDoc: 'PO20260415001',
     supplier: '上海鑫源贸易',
     dispatchChannel: '',
     operator: '张三',
     boxCount: 24,
+    amount: '3,640.00',
+    currency: '人民币 (CNY)',
     remark: '这是一条非常长的备注信息，专门用来测试两行文本显示的展示效果，确保列表卡片能完美自适应，超出部分将自动折叠。',
-    attachments: ['https://picsum.photos/200/200?random=1', 'https://picsum.photos/200/200?random=2'],
-    barcode: '6901234567890'
+    packingImages: ['https://picsum.photos/200/200?random=1'],
+    invoiceImages: ['https://picsum.photos/200/200?random=2'],
+    barcode: '6901234567890',
+    isScanned: true
   },
   {
     docNo: '20260428-2',
@@ -677,9 +589,13 @@ const INITIAL_DOCS = [
     dispatchChannel: '',
     operator: '李四',
     boxCount: 12,
+    amount: '1,280.00',
+    currency: '美元 (USD)',
     remark: '包装需重新检查确认。',
-    attachments: ['https://picsum.photos/200/200?random=3'],
-    barcode: '6912345678901'
+    packingImages: [],
+    invoiceImages: ['https://picsum.photos/200/200?random=3'],
+    barcode: '',
+    isScanned: false
   },
   {
     docNo: '20260428-3',
@@ -690,9 +606,13 @@ const INITIAL_DOCS = [
     dispatchChannel: '华南电商一区主发仓',
     operator: '王五',
     boxCount: 8,
+    amount: '',
+    currency: '人民币 (CNY)',
     remark: '跨区调拨无单情况说明：经调拨申请确认，由该仓直发。这是一条较长的测试备注，用于展示截断效果。',
-    attachments: [],
-    barcode: ''
+    packingImages: [],
+    invoiceImages: [],
+    barcode: '',
+    isScanned: false
   },
   {
     docNo: '20260427-1',
@@ -703,9 +623,13 @@ const INITIAL_DOCS = [
     dispatchChannel: '华北中转仓',
     operator: '赵六',
     boxCount: 15,
+    amount: '',
+    currency: '人民币 (CNY)',
     remark: '加急批次处理。',
-    attachments: ['https://picsum.photos/200/200?random=4'],
-    barcode: '6934567890123'
+    packingImages: ['https://picsum.photos/200/200?random=4'],
+    invoiceImages: [],
+    barcode: '',
+    isScanned: false
   }
 ];
 
@@ -726,278 +650,6 @@ const getClientXY = (e) => {
     return { x: e.touches[0].clientX, y: e.touches[0].clientY };
   }
   return { x: e.clientX || 0, y: e.clientY || 0 };
-};
-
-// --- 2.1 初始 PRD 文档数据（从 JSON 嵌入区读取） ---
-const INITIAL_PRD_DOCS = JSON.parse(document.getElementById('prd-embedded-data')?.textContent || '{}');
-
-// --- 2.2 全局可拖拽 PRD 悬浮球 ---
-const DraggablePRDMenu = ({ isPrdMode, setIsPrdMode, importPrdData, exportPrdData, embedSave, showToast }) => {
-  const [position, setPosition] = useState({ x: -1000, y: -1000 });
-  const [isReady, setIsReady] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef({ startX: 0, startY: 0, initX: 0, initY: 0, hasMoved: false });
-
-  useEffect(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    setPosition({ x: Math.max(10, w - 75), y: Math.max(10, h - 150) });
-    setIsReady(true);
-  }, []);
-
-  const handlePointerDown = (e) => {
-    e.currentTarget.setPointerCapture(e.pointerId);
-    dragRef.current = { startX: e.clientX, startY: e.clientY, initX: position.x, initY: position.y, hasMoved: false };
-  };
-
-  const handlePointerMove = (e) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
-      dragRef.current.hasMoved = true;
-      if (!isDragging) setIsDragging(true);
-    }
-    if (dragRef.current.hasMoved) {
-      let newX = dragRef.current.initX + dx;
-      let newY = dragRef.current.initY + dy;
-      newX = Math.max(0, Math.min(newX, window.innerWidth - 52));
-      newY = Math.max(0, Math.min(newY, window.innerHeight - 52));
-      setPosition({ x: newX, y: newY });
-    }
-  };
-
-  const handlePointerUp = (e) => {
-    e.currentTarget.releasePointerCapture(e.pointerId);
-    setTimeout(() => setIsDragging(false), 10);
-  };
-
-  const handleClick = (e) => {
-    if (dragRef.current.hasMoved) { e.stopPropagation(); e.preventDefault(); return; }
-    setIsPrdMode(!isPrdMode);
-    if (showToast) showToast(isPrdMode ? 'PRD 模式已关闭' : 'PRD 模式已开启', 'info');
-  };
-
-  useEffect(() => {
-    const handleResize = () => {
-      setPosition(prev => ({
-        x: Math.max(0, Math.min(prev.x, window.innerWidth - 52)),
-        y: Math.max(0, Math.min(prev.y, window.innerHeight - 52))
-      }));
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  if (!isReady) return null;
-
-  return ReactDOM.createPortal(
-    <div className="fixed z-[9999] flex flex-col items-center gap-3 transition-opacity"
-      style={{ left: `${position.x}px`, top: `${position.y}px`, touchAction: 'none' }}>
-      <div className={`flex items-center justify-center w-[52px] h-[52px] bg-white rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border-2 ${isPrdMode ? 'border-[#FF9500]' : 'border-transparent'} cursor-pointer select-none transition-transform ${isDragging ? 'scale-95 opacity-90' : 'hover:scale-105'}`}
-        onPointerDown={handlePointerDown} onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp} onPointerCancel={handlePointerUp}
-        onClick={handleClick} title={isPrdMode ? "关闭 PRD 模式" : "开启 PRD 模式"}>
-        <i className="ph-fill ph-notebook text-[#808592] text-[26px] pointer-events-none" style={{ color: isPrdMode ? '#FF9500' : '#808592' }}></i>
-      </div>
-      {isPrdMode && (
-        <div className="flex flex-col gap-2 fade-in" onPointerDown={e => e.stopPropagation()}>
-          <label className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#3C5BF2] hover:scale-105 transition-transform" title="导入 PRD 配置文件">
-            <i className="ph-fill ph-download-simple text-[20px]"></i>
-            <input type="file" accept=".json" className="hidden" onChange={importPrdData} />
-          </label>
-          <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#34C759] hover:scale-105 transition-transform" title="导出 PRD 配置文件" onClick={exportPrdData}>
-            <i className="ph-fill ph-upload-simple text-[20px]"></i>
-          </div>
-          <div className="flex items-center justify-center w-[40px] h-[40px] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-[#E8E8E8] cursor-pointer text-[#FF9500] hover:scale-105 transition-transform" title="嵌入保存（直接覆盖原HTML文件）" onClick={embedSave}>
-            <i className="ph-fill ph-floppy-disk text-[20px]"></i>
-          </div>
-        </div>
-      )}
-    </div>,
-    document.body
-  );
-};
-
-// --- 2.3 富文本编辑器 ---
-const RichTextEditor = ({ value, onChange, activeId }) => {
-  const editorRef = useRef(null);
-
-  useEffect(() => {
-    if (editorRef.current && editorRef.current.innerHTML !== value) {
-      editorRef.current.innerHTML = value || '';
-    }
-  }, [activeId]);
-
-  const handleInput = () => { if (editorRef.current) onChange(editorRef.current.innerHTML); };
-
-  const execCmd = (cmd, arg = null) => {
-    document.execCommand(cmd, false, arg);
-    editorRef.current.focus();
-    handleInput();
-  };
-
-  const insertTable = () => {
-    editorRef.current.focus();
-    document.execCommand('insertHTML', false,
-      `<table style="width: 100%; border-collapse: collapse;"><tbody>
-        <tr><td>表头1</td><td>表头2</td></tr>
-        <tr><td>内容</td><td>内容</td></tr>
-      </tbody></table><p><br></p>`);
-    handleInput();
-  };
-  const getCell = () => {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return null;
-    let n = sel.anchorNode;
-    while (n && n !== editorRef.current) { if (n.nodeType === 1 && (n.tagName === 'TD' || n.tagName === 'TH')) return n; n = n.parentNode; }
-    return null;
-  };
-  const insertRow = (above) => {
-    const cell = getCell(); if (!cell) return;
-    const row = cell.parentElement; const tbody = row.parentElement;
-    const newRow = row.cloneNode(true);
-    newRow.querySelectorAll('td,th').forEach(c => { c.innerHTML = ''; });
-    above ? tbody.insertBefore(newRow, row) : tbody.insertBefore(newRow, row.nextSibling);
-    handleInput();
-  };
-  const insertCol = (left) => {
-    const cell = getCell(); if (!cell) return;
-    const idx = Array.from(cell.parentElement.children).indexOf(cell);
-    cell.closest('table').querySelectorAll('tr').forEach(tr => {
-      const ref = tr.children[idx];
-      const newCell = ref ? ref.cloneNode(true) : document.createElement('td');
-      newCell.innerHTML = '';
-      left && ref ? tr.insertBefore(newCell, ref) : tr.appendChild(newCell);
-    });
-    handleInput();
-  };
-  const deleteRow = () => {
-    const cell = getCell(); if (!cell) return;
-    const row = cell.parentElement; const tbody = row.parentElement;
-    if (tbody.children.length <= 1) return;
-    row.remove(); handleInput();
-  };
-  const deleteCol = () => {
-    const cell = getCell(); if (!cell) return;
-    const idx = Array.from(cell.parentElement.children).indexOf(cell);
-    const table = cell.closest('table');
-    table.querySelectorAll('tr').forEach(tr => { if (tr.children[idx]) tr.children[idx].remove(); });
-    handleInput();
-  };
-
-  return (
-    <div className="border border-[#E8E8E8] rounded-lg overflow-hidden flex flex-col flex-1 bg-white shadow-sm">
-      <div className="flex items-center gap-1.5 p-1.5 border-b border-[#E8E8E8] bg-[#F9FAFB] flex-shrink-0 flex-wrap">
-        <button onClick={() => execCmd('bold')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="加粗"><b className="font-serif text-[15px]">B</b></button>
-        <button onClick={() => execCmd('italic')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="斜体"><i className="font-serif text-[15px]">I</i></button>
-        <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
-        <button onClick={() => execCmd('insertUnorderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="无序列表"><i className="ph ph-list-bullets text-[16px]"></i></button>
-        <button onClick={() => execCmd('insertOrderedList')} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="有序列表"><i className="ph ph-list-numbers text-[16px]"></i></button>
-        <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
-        <button onClick={insertTable} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors" title="插入表格"><i className="ph ph-table text-[16px]"></i></button>
-        <div className="w-px h-5 bg-[#E8E8E8] mx-1"></div>
-        <button onClick={() => insertRow(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="上方插入行">+↑</button>
-        <button onClick={() => insertRow(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="下方插入行">+↓</button>
-        <button onClick={() => insertCol(true)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="左侧插入列">+←</button>
-        <button onClick={() => insertCol(false)} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#353D51] transition-colors text-[11px] font-bold" title="右侧插入列">+→</button>
-        <button onClick={deleteRow} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前行">-行</button>
-        <button onClick={deleteCol} className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#E8E8E8] text-[#EF4444] transition-colors text-[11px] font-bold" title="删除当前列">-列</button>
-      </div>
-      <div ref={editorRef} className="flex-1 p-3 outline-none overflow-y-auto text-[14px] leading-relaxed rich-text-content text-[#353D51]"
-        contentEditable onInput={handleInput} style={{ minHeight: '180px' }} />
-    </div>
-  );
-};
-
-// --- 2.4 PRD Context ---
-const PrdContext = React.createContext();
-
-// --- 2.5 PrdWrapper ---
-const PrdBadge = ({ order, anchorRef }) => {
-  const [pos, setPos] = useState(null);
-
-  useEffect(() => {
-    const update = () => {
-      const el = anchorRef?.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      if (rect.width > 0 && rect.height > 0) {
-        setPos({ x: rect.right - 10, y: rect.top - 10 });
-      }
-    };
-    update();
-    const timer = setTimeout(update, 100);
-    window.addEventListener('scroll', update, true);
-    window.addEventListener('resize', update);
-    return () => { clearTimeout(timer); window.removeEventListener('scroll', update, true); window.removeEventListener('resize', update); };
-  }, [anchorRef]);
-
-  if (!pos) return null;
-  return ReactDOM.createPortal(
-    <div className="fixed w-[22px] h-[22px] bg-[#FF9500] text-white text-[11px] font-bold rounded-full flex items-center justify-center shadow-[0_2px_6px_rgba(255,149,0,0.5)] z-[9998] pointer-events-none"
-      style={{ left: `${pos.x}px`, top: `${pos.y}px` }}>
-      {order}
-    </div>,
-    document.body
-  );
-};
-
-const PrdWrapper = ({ id, children, className = "", ...rest }) => {
-  const { prdDocs, isPrdMode, openPrdDrawer, drawerOpen } = React.useContext(PrdContext);
-  const anchorRef = useRef(null);
-  const docData = prdDocs[id];
-  const hasContent = docData && (docData.title || docData.content);
-
-  if (!isPrdMode) return <div className={className} {...rest}>{children}</div>;
-
-  return (
-    <div ref={anchorRef} className={`relative ring-2 ring-transparent hover:ring-[#FF9500] hover:bg-[rgba(255,149,0,0.05)] transition-all rounded-lg cursor-pointer ${className}`}
-      onClickCapture={(e) => { e.preventDefault(); e.stopPropagation(); openPrdDrawer(id); }}>
-      <div className="absolute inset-0 z-50"></div>
-      {children}
-      {hasContent && !drawerOpen && <PrdBadge order={docData.order} anchorRef={anchorRef} />}
-    </div>
-  );
-};
-
-const CIRCLED_NUMS = ['①','②','③','④','⑤','⑥','⑦','⑧','⑨','⑩','⑪','⑫','⑬','⑭','⑮','⑯','⑰','⑱','⑲','⑳'];
-const BadgePillBar = ({ badges, activeId, onSelect, scrollRef }) => {
-  const scrollContainerRef = useRef(null);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(false);
-
-  const checkOverflow = () => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    setShowLeft(el.scrollLeft > 2);
-    setShowRight(el.scrollWidth > el.clientWidth && el.scrollLeft + el.clientWidth < el.scrollWidth - 2);
-  };
-
-  useEffect(() => { checkOverflow(); }, [badges]);
-
-  const scroll = (dir) => {
-    const el = scrollContainerRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir * 120, behavior: 'smooth' });
-    setTimeout(checkOverflow, 200);
-  };
-
-  useEffect(() => { if (scrollRef) scrollRef.current = scrollContainerRef.current; }, []);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '8px 16px', background: '#fff', borderBottom: '1px solid #e5e7eb', flexShrink: 0 }}>
-      <div className={`badge-arrow ${showLeft ? '' : 'hidden'}`} onClick={() => scroll(-1)}>◀</div>
-      <div ref={scrollContainerRef} className="badge-pill-scroll" onScroll={checkOverflow}>
-        {badges.map(b => (
-          <div key={b.id} className={`badge-pill ${b.id === activeId ? 'active' : ''}`} onClick={() => onSelect(b.id)}>
-            {CIRCLED_NUMS[b.order - 1] || b.order}
-          </div>
-        ))}
-      </div>
-      <div className={`badge-arrow ${showRight ? '' : 'hidden'}`} onClick={() => scroll(1)}>▶</div>
-    </div>
-  );
 };
 
 function App() {
@@ -1025,10 +677,14 @@ function App() {
     supplier: '',
     dispatchChannel: '',
     boxCount: 1, 
+    amount: '',
+    currency: '人民币 (CNY)',
     operator: '张三',
     remark: '',
-    attachments: [], 
-    barcode: '' 
+    packingImages: [], 
+    invoiceImages: [], 
+    barcode: '',
+    isScanned: false // 扫码录入标识，控制编辑状态
   });
 
   const [isBasicInfoExpanded, setIsBasicInfoExpanded] = useState(true);
@@ -1041,193 +697,6 @@ function App() {
   // Toast / Image Preview
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [previewImageSrc, setPreviewImageSrc] = useState(null);
-
-  // --- PRD 模式状态 ---
-  const [isPrdMode, setIsPrdMode] = useState(false);
-  const [activePrdId, setActivePrdId] = useState(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [prdDrawerWidth, setPrdDrawerWidth] = useState(560);
-  const [isResizing, setIsResizing] = useState(false);
-  const resizeRef = useRef(null);
-  const badgePillScrollRef = useRef(null);
-  const [editingDoc, setEditingDoc] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
-  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-
-  const [prdDocs, setPrdDocs] = useState(INITIAL_PRD_DOCS);
-
-  // --- 简单的 Toast 提示函数 ---
-  const showPrdToast = (msg, type = 'info') => {
-    let container = document.getElementById('prd-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'prd-toast-container';
-      container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col gap-2 pointer-events-none';
-      document.body.appendChild(container);
-    }
-    const toast = document.createElement('div');
-    const bgColors = {
-      success: 'bg-[#34C759]',
-      error: 'bg-[#FF3B30]',
-      info: 'bg-[#007AFF]'
-    };
-    toast.className = `px-4 py-2 text-white text-[13px] rounded-lg shadow-lg ${bgColors[type] || bgColors.info} transition-all duration-300 transform translate-y-[-20px] opacity-0 flex items-center gap-1.5`;
-    toast.innerHTML = `<i class="ph ph-info text-[16px]"></i><span>${msg}</span>`;
-    container.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.className = toast.className.replace('translate-y-[-20px] opacity-0', 'translate-y-0 opacity-100');
-    }, 10);
-    
-    setTimeout(() => {
-      toast.className = toast.className.replace('translate-y-0 opacity-100', 'translate-y-[-20px] opacity-0');
-      setTimeout(() => { toast.remove(); }, 300);
-    }, 2500);
-  };
-
-  // --- 导入/导出 ---
-  const exportPrdData = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(prdDocs, null, 2));
-    const a = document.createElement('a');
-    a.href = dataStr; a.download = "预收单PDA_PRD数据.json";
-    document.body.appendChild(a); a.click(); a.remove();
-    showPrdToast('已导出 PRD 数据文件', 'success');
-  };
-
-  const importPrdData = (event) => {
-    const file = event.target.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const imported = JSON.parse(e.target.result);
-        if (typeof imported === 'object' && imported !== null) {
-          setPrdDocs(imported);
-          showPrdToast('PRD 数据导入成功', 'success');
-        } else { showPrdToast('无效的数据文件格式', 'error'); }
-      } catch (error) { showPrdToast('文件解析失败', 'error'); }
-    };
-    reader.readAsText(file); event.target.value = null;
-  };
-
-  // --- 抽屉操作（含编辑状态控制） ---
-  const openPrdDrawer = (id) => {
-    setActivePrdId(id); setIsConfirmingDelete(false);
-    if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
-    else {
-      const orders = Object.values(prdDocs).map(d => d.order);
-      setEditingDoc({ order: orders.length > 0 ? Math.max(...orders) + 1 : 1, title: '', content: '' });
-      setIsEditing(true);
-    }
-    setDrawerOpen(true);
-  };
-
-  const hasUnsavedChanges = () => {
-    if (!editingDoc) return false;
-    const existing = prdDocs[activePrdId];
-    return !existing || existing.title !== editingDoc.title || existing.content !== editingDoc.content;
-  };
-
-  const closePrdDrawer = () => {
-    if (isEditing && hasUnsavedChanges()) { setShowDiscardConfirm(true); return; }
-    setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
-    setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
-  };
-
-  const discardChanges = () => {
-    setDrawerOpen(false); setIsEditing(false); setShowDiscardConfirm(false); setIsConfirmingDelete(false);
-    setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
-  };
-
-  const executeDelete = () => {
-    let nd = { ...prdDocs }; delete nd[activePrdId];
-    let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
-    const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; });
-    setPrdDocs(rebuilt);
-    setIsConfirmingDelete(false); showPrdToast('已删除该角标说明', 'success');
-    if (sorted.length > 0) {
-      const nextId = sorted[0];
-      setActivePrdId(nextId); setEditingDoc({ ...rebuilt[nextId] }); setIsEditing(false);
-    } else {
-      setDrawerOpen(false); setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
-    }
-  };
-
-  const confirmPrdSave = () => {
-    let nd = { ...prdDocs };
-    if (!editingDoc.title?.trim() && !editingDoc.content?.trim()) {
-      delete nd[activePrdId];
-      let c = 1; const sorted = Object.keys(nd).sort((a, b) => nd[a].order - nd[b].order);
-      const rebuilt = {}; sorted.forEach(k => { rebuilt[k] = { ...nd[k], order: c++ }; }); nd = rebuilt;
-    } else { nd[activePrdId] = editingDoc; }
-    setPrdDocs(nd);
-    setDrawerOpen(false); showPrdToast('保存成功，请点击悬浮球【嵌入保存】以固化到文件', 'success');
-    setTimeout(() => { setActivePrdId(null); setEditingDoc(null); }, 300);
-  };
-
-  const embedSave = async () => {
-    if (typeof window.showOpenFilePicker !== 'function') {
-      showPrdToast('当前浏览器不支持直接覆盖，请使用导出功能', 'error');
-      return;
-    }
-    try {
-      const [fileHandle] = await window.showOpenFilePicker({
-        types: [{ description: 'HTML 文件', accept: { 'text/html': ['.html', '.htm'] } }],
-        multiple: false
-      });
-      const file = await fileHandle.getFile();
-      const fileContent = await file.text();
-      const jsonStartTag = '<script type="application/json" id="prd-embedded-data">';
-      const jsonEndTag = '<' + '/script>';
-      let jsonStart = -1;
-      let searchPos = 0;
-      while (true) {
-        const idx = fileContent.indexOf(jsonStartTag, searchPos);
-        if (idx === -1) break;
-        const afterTag = fileContent.substring(idx + jsonStartTag.length, idx + jsonStartTag.length + 10).trim();
-        if (afterTag.startsWith('{')) { jsonStart = idx; break; }
-        searchPos = idx + 1;
-      }
-      if (jsonStart === -1) { showPrdToast('选中文件缺少 PRD 嵌入区', 'error'); return; }
-      const jsonEnd = fileContent.indexOf(jsonEndTag, jsonStart);
-      if (jsonEnd === -1) { showPrdToast('PRD 嵌入区格式异常', 'error'); return; }
-      const jsonStr = JSON.stringify(prdDocs, null, 2);
-      const before = fileContent.substring(0, jsonStart + jsonStartTag.length);
-      const after = fileContent.substring(jsonEnd);
-      const newContent = before + '\n' + jsonStr + '\n' + after;
-      const writable = await fileHandle.createWritable();
-      await writable.write(newContent);
-      await writable.close();
-      showPrdToast('原文件已成功覆盖更新', 'success');
-    } catch (error) {
-      if (error.name !== 'AbortError') {
-        showPrdToast('嵌入保存失败: ' + error.message, 'error');
-        console.error('Save failed:', error);
-      }
-    }
-  };
-
-  const handlePrdChange = (field, value) => setEditingDoc(prev => ({ ...prev, [field]: value }));
-
-  const startResize = (e) => {
-    e.preventDefault();
-    setIsResizing(true);
-    document.body.classList.add('prd-resizing');
-    resizeRef.current = { startX: e.clientX, startWidth: prdDrawerWidth };
-    const onMove = (ev) => {
-      const dx = resizeRef.current.startX - ev.clientX;
-      const newWidth = Math.max(360, Math.min(900, resizeRef.current.startWidth + dx));
-      setPrdDrawerWidth(newWidth);
-    };
-    const onUp = () => {
-      setIsResizing(false);
-      document.body.classList.remove('prd-resizing');
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  };
 
   const showToast = (message, type = '') => {
     setToast({ show: true, message, type });
@@ -1273,9 +742,10 @@ function App() {
       if (appliedFilters.startDate && doc.date < appliedFilters.startDate) return false;
       if (appliedFilters.endDate && doc.date > appliedFilters.endDate) return false;
 
-      // 附件筛选
+      // 附件筛选 (综合检查两种附件)
       if (appliedFilters.hasAttachment.length > 0) {
-        const docHasAttachStr = (doc.attachments && doc.attachments.length > 0) ? '是' : '否';
+        const hasAttach = (doc.packingImages && doc.packingImages.length > 0) || (doc.invoiceImages && doc.invoiceImages.length > 0);
+        const docHasAttachStr = hasAttach ? '是' : '否';
         if (!appliedFilters.hasAttachment.includes(docHasAttachStr)) return false;
       }
       return true;
@@ -1370,10 +840,14 @@ function App() {
       supplier: '',
       dispatchChannel: '',
       boxCount: 1,
+      amount: '',
+      currency: '人民币 (CNY)',
       operator: '张三',
       remark: '',
-      attachments: [],
-      barcode: ''
+      packingImages: [],
+      invoiceImages: [],
+      barcode: '',
+      isScanned: false // 初始化为非扫码状态
     });
     navigateTo('page-edit');
   };
@@ -1388,10 +862,14 @@ function App() {
       supplier: doc.supplier || '',
       dispatchChannel: doc.dispatchChannel || '',
       boxCount: doc.boxCount,
+      amount: doc.amount ? doc.amount.replace(/,/g, '') : '',
+      currency: doc.currency || '人民币 (CNY)',
       operator: doc.operator || '张三',
       remark: doc.remark || '',
-      attachments: doc.attachments || [],
-      barcode: doc.barcode || ''
+      packingImages: doc.packingImages || [],
+      invoiceImages: doc.invoiceImages || [],
+      barcode: doc.barcode || '',
+      isScanned: !!doc.isScanned // 继承扫描状态锁定控制
     });
     navigateTo('page-edit');
   };
@@ -1407,9 +885,9 @@ function App() {
         supplier: '上海鑫源贸易',
         dispatchChannel: '',
         boxCount: 30,
-        remark: 'PDA扫描快捷带入单据'
+        isScanned: true // 核心：置为 true 之后单据相关字段禁止手动编辑
       }));
-      showToast(`扫码成功: 6901234567890\n已自动导入匹配关联单号！`, 'success');
+      showToast(`扫码成功: 6901234567890\n已自动导入匹配单据，单号不可修改！`, 'success');
     }, 800);
   };
 
@@ -1433,24 +911,27 @@ function App() {
       dispatchChannel
     }));
     setActiveSheet(null);
+    if(supplier) showToast('已带出供应商', 'success');
+    if(dispatchChannel) showToast('已带出发货渠道', 'success');
   };
-  const handleSimulateUpload = () => {
+
+  const handleSimulateUpload = (field) => {
     showToast('上传中...', '');
     setTimeout(() => {
       const randomImg = `https://picsum.photos/200/200?random=${Math.random()}`;
       setEditForm(prev => ({
         ...prev,
-        attachments: [...prev.attachments, randomImg]
+        [field]: [...prev[field], randomImg]
       }));
       showToast('上传成功', 'success');
     }, 500);
   };
 
-  const handleRemoveImage = (index, e) => {
+  const handleRemoveImage = (field, index, e) => {
     e.stopPropagation();
     setEditForm(prev => ({
       ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index)
+      [field]: prev[field].filter((_, i) => i !== index)
     }));
   };
 
@@ -1473,11 +954,13 @@ function App() {
       showToast('请输入有效箱数', 'error'); return;
     }
 
+    const formattedAmount = editForm.amount ? parseFloat(editForm.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+
     if (editForm.docNo) {
       // 编辑
       setDocs(prev => prev.map(item => {
         if (item.docNo === editForm.docNo) {
-          return { ...item, ...editForm };
+          return { ...item, ...editForm, amount: formattedAmount };
         }
         return item;
       }));
@@ -1485,7 +968,7 @@ function App() {
     } else {
       // 新建
       const newDocNo = `NEW-${Date.now()}`;
-      const newDoc = { ...editForm, docNo: newDocNo };
+      const newDoc = { ...editForm, docNo: newDocNo, amount: formattedAmount };
       setDocs(prev => [newDoc, ...prev]);
       showToast('预收单已提交', 'success');
     }
@@ -1501,118 +984,7 @@ function App() {
   }, [docs, currentDetailDocNo]);
 
   return (
-    <PrdContext.Provider value={{ prdDocs, isPrdMode, openPrdDrawer, drawerOpen }}>
-      <div className="phone-frame">
-        {/* 悬浮球 */}
-        <DraggablePRDMenu
-          isPrdMode={isPrdMode} setIsPrdMode={setIsPrdMode}
-          importPrdData={importPrdData} exportPrdData={exportPrdData}
-          embedSave={embedSave} showToast={showPrdToast}
-        />
-
-        {/* PRD 抽屉 Portal（放在所有业务 Modals 之前） */}
-        {ReactDOM.createPortal(
-          <>
-            <div className={`fixed inset-0 bg-black/40 z-[9990] transition-opacity duration-300 ${drawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-              onClick={closePrdDrawer}></div>
-            <div className={`fixed right-0 top-0 bottom-0 bg-[#F5F5F7] shadow-2xl z-[9995] transition-transform duration-300 transform flex flex-col ${drawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
-              style={{ width: `${prdDrawerWidth}px`, maxWidth: '90vw' }}>
-              {/* 左侧拖拽拉伸手柄 */}
-              <div className="absolute left-0 top-0 bottom-0 w-1.5 cursor-col-resize z-10 hover:bg-[#FF9500] hover:opacity-60 transition-opacity group"
-                onMouseDown={startResize}>
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1 w-1 h-12 bg-gray-300 rounded-full group-hover:bg-[#FF9500] transition-colors"></div>
-              </div>
-              <div className="px-6 py-4 border-b border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
-                <span className="text-[18px] font-semibold text-[#333]">产品规则说明</span>
-                <div className="w-8 h-8 rounded-full bg-[#F5F5F7] flex items-center justify-center cursor-pointer active:scale-95 hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>
-                  <i className="ph ph-x text-[16px] text-[#666]"></i>
-                </div>
-              </div>
-              <BadgePillBar
-                badges={Object.keys(prdDocs).map(id => ({ id, order: prdDocs[id].order })).sort((a, b) => a.order - b.order)}
-                activeId={activePrdId}
-                onSelect={(id) => {
-                  setActivePrdId(id); setIsConfirmingDelete(false);
-                  if (prdDocs[id]) { setEditingDoc({ ...prdDocs[id] }); setIsEditing(false); }
-                }}
-                scrollRef={badgePillScrollRef}
-              />
-              <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6">
-                {/* ===== 标题字段：只读态与编辑态样式必须一致 ===== */}
-                <div className="flex flex-col gap-2 flex-shrink-0">
-                  <label className="text-[14px] font-medium text-[#808592] ml-1">功能模块名称</label>
-                  {isEditing ? (
-                    <input className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl outline-none focus:border-[#FF9500] focus:ring-2 focus:ring-[rgba(255,149,0,0.1)] bg-white font-medium text-[#353D51] transition-all"
-                      value={editingDoc?.title || ''} onChange={e => handlePrdChange('title', e.target.value)} />
-                  ) : (
-                    <div className="px-4 py-3 text-[15px] border border-[#E8E8E8] rounded-xl bg-white font-medium text-[#353D51] min-h-[48px]">
-                      {editingDoc?.title || '未命名'}
-                    </div>
-                  )}
-                </div>
-                {/* ===== 内容区域：只读态与编辑态样式必须一致 ===== */}
-                <div className="flex flex-col gap-2 flex-1 min-h-[300px]">
-                  <label className="text-[14px] font-medium text-[#808592] ml-1">交互与规则说明（富文本）</label>
-                  {isEditing ? (
-                    <RichTextEditor value={editingDoc?.content || ''} onChange={val => handlePrdChange('content', val)} activeId={activePrdId} />
-                  ) : (
-                    <div className="flex-1 p-3 border border-[#E8E8E8] rounded-lg bg-white shadow-sm overflow-y-auto rich-text-content text-[14px] leading-relaxed text-[#353D51]"
-                      dangerouslySetInnerHTML={{ __html: editingDoc?.content || '' }} />
-                  )}
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-[#E8E8E8] bg-white flex items-center justify-between flex-shrink-0">
-                {isEditing ? (
-                   <>{/* 编辑态：左侧删除/放弃，右侧取消+保存 */}
-                     {showDiscardConfirm ? (
-                       <div className="flex items-center gap-2 fade-in">
-                         <span className="text-[13px] font-medium text-orange-500">有未保存的内容</span>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setShowDiscardConfirm(false)}>返回编辑</button>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={discardChanges}>放弃修改</button>
-                       </div>
-                     ) : isConfirmingDelete ? (
-                       <div className="flex items-center gap-2 fade-in">
-                         <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
-                       </div>
-                     ) : prdDocs[activePrdId] ? (
-                       <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
-                         <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
-                       </button>
-                     ) : <div></div>}
-                     <div className="flex items-center gap-3">
-                       <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>取消</button>
-                       <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={confirmPrdSave}>保存</button>
-                     </div>
-                   </>
-                ) : (
-                   <>{/* 只读态：左侧删除，右侧关闭+编辑 */}
-                     {prdDocs[activePrdId] && !isConfirmingDelete ? (
-                       <button className="flex items-center text-[15px] font-medium text-[#FF3B30] active:scale-95 transition-transform px-2 py-2 rounded-lg hover:bg-[rgba(255,59,48,0.08)]" onClick={() => setIsConfirmingDelete(true)}>
-                         <i className="ph-fill ph-trash mr-1.5 text-[18px]"></i> 删除
-                       </button>
-                     ) : isConfirmingDelete ? (
-                       <div className="flex items-center gap-2 fade-in">
-                         <span className="text-[13px] font-medium text-[#FF3B30]">确认删除？</span>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#F5F5F7] hover:bg-[#E8E8E8] text-[#353D51]" onClick={() => setIsConfirmingDelete(false)}>取消</button>
-                         <button className="px-3 py-1.5 rounded text-[13px] bg-[#FF3B30] text-white shadow-sm active:scale-95 transition-transform" onClick={executeDelete}>删除</button>
-                       </div>
-                     ) : <div></div>}
-                     <div className="flex items-center gap-3">
-                       <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-[#353D51] bg-[#F5F5F7] hover:bg-[#E8E8E8] transition-colors" onClick={closePrdDrawer}>关闭</button>
-                       <button className="px-6 py-2.5 rounded-lg text-[15px] font-medium text-white shadow-md active:scale-95 transition-transform" style={{ background: '#FF9500' }} onClick={() => setIsEditing(true)}>
-                         <i className="ph-fill ph-note-pencil mr-1 text-[16px]"></i>编辑
-                       </button>
-                     </div>
-                   </>
-                )}
-              </div>
-            </div>
-          </>,
-          document.body
-        )}
-
+    <div className="phone-frame">
       <div className="status-bar"><span className="status-bar-time">9:41</span></div>
 
       {/* ==================== PAGE 0: 菜单页 ==================== */}
@@ -1627,7 +999,7 @@ function App() {
           <div className="menu-group" style={{ borderBottom: 'none', paddingTop: '10px' }}>
             <div className="menu-group-title">到货业务</div>
             <div className="menu-grid">
-              <PrdWrapper id="menu-btn" className="menu-btn" onClick={() => navigateTo('page-list')}>
+              <div className="menu-btn" onClick={() => navigateTo('page-list')}>
                 <div className="menu-btn-icon-wrapper">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
@@ -1639,7 +1011,7 @@ function App() {
                   </svg>
                 </div>
                 <span className="menu-btn-text">预收单</span>
-              </PrdWrapper>
+              </div>
             </div>
           </div>
         </div>
@@ -1653,16 +1025,14 @@ function App() {
           </button>
           <div className="header-title">预收单列表</div>
           <div className="header-actions">
-            <PrdWrapper id="list-filter-btn">
-              <button className="header-icon" onClick={() => setShowUnifiedOverlay(true)} title="检索与筛选">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
-              </button>
-            </PrdWrapper>
+            <button className="header-icon" onClick={() => setShowUnifiedOverlay(true)} title="检索与筛选">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M7 12h10M10 18h4"/></svg>
+            </button>
           </div>
         </div>
 
         {/* 全局吸顶的日期范围筛选组件 */}
-        <PrdWrapper id="global-date-filter" className="global-date-filter">
+        <div className="global-date-filter">
           <input 
             type="date" 
             value={appliedFilters.startDate}
@@ -1680,13 +1050,14 @@ function App() {
               setTempFilters(prev => ({ ...prev, endDate: e.target.value }));
             }}
           />
-        </PrdWrapper>
+        </div>
 
-        <PrdWrapper id="list-card" className="content">
+        <div className="content">
           {filteredDocs.length > 0 ? (
             filteredDocs.map((doc) => {
               const isSwiped = swipedDocNo === doc.docNo;
-              const hasAttachment = doc.attachments && doc.attachments.length > 0;
+              const hasAttachment = (doc.packingImages && doc.packingImages.length > 0) || (doc.invoiceImages && doc.invoiceImages.length > 0);
+              const totalAttachments = (doc.packingImages?.length || 0) + (doc.invoiceImages?.length || 0);
 
               return (
                 <div key={doc.docNo} className="list-card-wrap">
@@ -1722,7 +1093,7 @@ function App() {
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                             </svg>
-                            附件{doc.attachments.length > 1 ? `(${doc.attachments.length})` : ''}
+                            附件{totalAttachments > 1 ? `(${totalAttachments})` : ''}
                           </button>
                         )}
                         <button 
@@ -1777,14 +1148,14 @@ function App() {
             <div className="text-center py-10 text-gray-400">暂无匹配单据</div>
           )}
           <div className="loaded-all">已经全部加载完毕</div>
-        </PrdWrapper>
+        </div>
 
-        <PrdWrapper id="list-add-new" className="bottom-bar">
+        <div className="bottom-bar">
           <button className="btn-primary-full" onClick={handleAddNewInit}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M12 5v14M5 12h14"/></svg>
             新增预收单
           </button>
-        </PrdWrapper>
+        </div>
       </div>
 
       {/* ==================== PAGE 2: 预收单新建/编辑 ==================== */}
@@ -1799,7 +1170,7 @@ function App() {
 
         <div className="content">
           {/* 高精度还原 image_b8b00a.png 扫描条码输入框样式 */}
-          <PrdWrapper id="edit-scan-barcode" className="flex items-center bg-white border border-[#E5E5E5] rounded-md px-3.5 py-3 shadow-sm my-3 mx-3">
+          <div className="flex items-center bg-white border border-[#E5E5E5] rounded-md px-3.5 py-3 shadow-sm my-3 mx-3">
             <div className="flex-shrink-0 mr-3 text-[#333333] flex items-center">
               <svg width="24" height="18" viewBox="0 0 24 18" fill="currentColor">
                 <rect x="0" y="0" width="2.5" height="18" />
@@ -1817,7 +1188,13 @@ function App() {
               className="flex-1 bg-transparent text-sm text-[#1D2538] placeholder-[#9CA3AF] outline-none font-sans" 
               value={editForm.barcode || ''}
               onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))}
-              placeholder="" 
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleBarcodeScan();
+                }
+              }}
+              placeholder="请扫描条形码、唯一码、箱号" 
             />
             <button 
               type="button" 
@@ -1830,9 +1207,9 @@ function App() {
                 <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2" />
               </svg>
             </button>
-          </PrdWrapper>
+          </div>
 
-          <PrdWrapper id="edit-form-basic-info" className="form-group">
+          <div className="form-group">
             <div 
               className="form-group-title flex justify-between items-center cursor-pointer select-none"
               onClick={() => setIsBasicInfoExpanded(!isBasicInfoExpanded)}
@@ -1856,22 +1233,26 @@ function App() {
                   </div>
                 </div>
 
-                <div className="form-row">
+                <div className={`form-row ${editForm.isScanned ? '' : 'cursor-pointer'}`} onClick={() => {
+                  if (editForm.isScanned) { showToast('扫码带出信息不可编辑', 'warning'); return; }
+                  setActiveSheet('docTypeSheet');
+                }}>
                   <div className="form-label"><span className="required">*</span>单据类型</div>
-                  <div className="form-value" onClick={() => setActiveSheet('docTypeSheet')}>
+                  <div className={`form-value ${editForm.isScanned ? 'disabled' : ''}`}>
                     {editForm.docType ? <span>{editForm.docType}</span> : <span className="placeholder">选择单据类型</span>}
-                    <span className="form-arrow">›</span>
+                    {!editForm.isScanned && <span className="form-arrow">›</span>}
                   </div>
                 </div>
 
-                <div className="form-row">
+                <div className={`form-row ${editForm.isScanned ? '' : 'cursor-pointer'}`} onClick={() => {
+                  if (editForm.isScanned) { showToast('扫码带出信息不可编辑', 'warning'); return; }
+                  if (!editForm.docType) { showToast('请先选择单据类型', 'error'); return; }
+                  setActiveSheet('refDocSheet');
+                }}>
                   <div className="form-label"><span className="required">*</span>关联单号</div>
-                  <div className="form-value" onClick={() => {
-                    if (!editForm.docType) { showToast('请先选择单据类型', 'error'); return; }
-                    setActiveSheet('refDocSheet');
-                  }}>
+                  <div className={`form-value ${editForm.isScanned ? 'disabled' : ''}`}>
                     {editForm.refDoc ? <span>{editForm.refDoc}</span> : <span className="placeholder">请选择</span>}
-                    <span className="form-arrow">›</span>
+                    {!editForm.isScanned && <span className="form-arrow">›</span>}
                   </div>
                 </div>
 
@@ -1919,6 +1300,31 @@ function App() {
                   </div>
                 </div>
 
+                {/* 新增：非必填金额字段 */}
+                <div className="form-row">
+                  <div className="form-label">金额</div>
+                  <div className="form-value flex items-center justify-end">
+                    <input 
+                      type="number" 
+                      className="form-input text-right" 
+                      value={editForm.amount}
+                      onChange={(e) => setEditForm(prev => ({ ...prev, amount: e.target.value }))}
+                      placeholder="输入金额(选填)" 
+                      style={{ width: '120px' }} 
+                      step="0.01" 
+                    />
+                  </div>
+                </div>
+
+                {/* 新增：币种字段（点击选择） */}
+                <div className="form-row cursor-pointer" onClick={() => setActiveSheet('currencySheet')}>
+                  <div className="form-label">币种</div>
+                  <div className="form-value">
+                    {editForm.currency ? <span>{editForm.currency}</span> : <span className="placeholder">选择币种</span>}
+                    <span className="form-arrow">›</span>
+                  </div>
+                </div>
+
                 <div className="form-row" onClick={() => setActiveSheet('operatorFormSheet')}>
                   <div className="form-label">操作人</div>
                   <div className="form-value">
@@ -1940,32 +1346,47 @@ function App() {
                 </div>
               </div>
             )}
-          </PrdWrapper>
+          </div>
 
-          {/* 合并后的单一附件区域 */}
-          <PrdWrapper id="edit-form-upload" className="upload-area">
-            <div className="upload-area-title">附件</div>
+          {/* 重新拆分为 随货附件 和 发票 两个区域 */}
+          <div className="upload-area">
+            <div className="upload-area-title">随货附件</div>
             <div className="upload-grid">
-              {editForm.attachments.map((src, index) => (
-                <div key={index} className="upload-item">
+              {editForm.packingImages.map((src, index) => (
+                <div key={`pack-${index}`} className="upload-item">
                   <img src={src} onClick={() => setPreviewImageSrc(src)} alt="" />
-                  <div className="upload-delete" onClick={(e) => handleRemoveImage(index, e)}>✕</div>
+                  <div className="upload-delete" onClick={(e) => handleRemoveImage('packingImages', index, e)}>✕</div>
                 </div>
               ))}
-              <div className="upload-add" onClick={handleSimulateUpload}>
+              <div className="upload-add" onClick={() => handleSimulateUpload('packingImages')}>
                 <span style={{ fontSize: '24px' }}>+</span><span>上传附件</span>
               </div>
             </div>
-          </PrdWrapper>
+          </div>
+
+          <div className="upload-area">
+            <div className="upload-area-title">发票</div>
+            <div className="upload-grid">
+              {editForm.invoiceImages.map((src, index) => (
+                <div key={`inv-${index}`} className="upload-item">
+                  <img src={src} onClick={() => setPreviewImageSrc(src)} alt="" />
+                  <div className="upload-delete" onClick={(e) => handleRemoveImage('invoiceImages', index, e)}>✕</div>
+                </div>
+              ))}
+              <div className="upload-add" onClick={() => handleSimulateUpload('invoiceImages')}>
+                <span style={{ fontSize: '24px' }}>+</span><span>上传发票</span>
+              </div>
+            </div>
+          </div>
 
         </div>
 
-        <PrdWrapper id="edit-bottom-bar" className="bottom-bar">
+        <div className="bottom-bar">
           <div className="btn-row">
             <button className="btn-secondary" onClick={() => navigateTo('page-list')}>取消</button>
             <button className="btn-primary" onClick={handleFormSubmit}>提交</button>
           </div>
-        </PrdWrapper>
+        </div>
       </div>
 
       {/* ==================== PAGE 3: 预收单详情 ==================== */}
@@ -1981,7 +1402,7 @@ function App() {
 
         {activeDetailDoc ? (
           <div className="content">
-            <PrdWrapper id="detail-basic-info" className="detail-section">
+            <div className="detail-section">
               <div className="detail-section-title">基本信息</div>
               
               <div className="detail-row">
@@ -2014,6 +1435,17 @@ function App() {
                 <span className="detail-label">箱数</span>
                 <span className="detail-value text-blue-600 font-bold">{activeDetailDoc.boxCount} 箱</span>
               </div>
+              
+              {/* 新增展示：详情页跟随新增的金额与币种改为两行展示 */}
+              <div className="detail-row">
+                <span className="detail-label">金额</span>
+                <span className="detail-value font-semibold">{activeDetailDoc.amount || '-'}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">币种</span>
+                <span className="detail-value">{activeDetailDoc.currency || '-'}</span>
+              </div>
+
               <div className="detail-row">
                 <span className="detail-label">操作人</span>
                 <span className="detail-value">{activeDetailDoc.operator || '-'}</span>
@@ -2024,43 +1456,61 @@ function App() {
                   {activeDetailDoc.remark || '-'}
                 </span>
               </div>
-            </PrdWrapper>
+            </div>
 
-            {/* 合并后的附件展示 */}
-            <PrdWrapper id="detail-attachments" className="detail-section">
-              <div className="detail-section-title">附件</div>
-              <div className="detail-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+            {/* 恢复详情页分离展示 */}
+            <div className="detail-section">
+              <div className="detail-section-title">附件信息</div>
+              
+              <div className="detail-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <span className="detail-label" style={{ width: '100%' }}>随货附件</span>
                 <div className="upload-grid">
-                  {activeDetailDoc.attachments && activeDetailDoc.attachments.length > 0 ? (
-                    activeDetailDoc.attachments.map((src, i) => (
-                      <div key={i} className="upload-item shadow-sm">
+                  {activeDetailDoc.packingImages && activeDetailDoc.packingImages.length > 0 ? (
+                    activeDetailDoc.packingImages.map((src, i) => (
+                      <div key={`dt-pack-${i}`} className="upload-item shadow-sm">
                         <img src={src} onClick={() => setPreviewImageSrc(src)} alt="附件" />
                       </div>
                     ))
                   ) : (
-                    <span className="detail-value text-gray-400 font-normal">暂无附件</span>
+                    <span className="detail-value text-gray-400 font-normal">未上传</span>
                   )}
                 </div>
               </div>
-            </PrdWrapper>
+
+              <div className="detail-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <span className="detail-label" style={{ width: '100%' }}>发票</span>
+                <div className="upload-grid">
+                  {activeDetailDoc.invoiceImages && activeDetailDoc.invoiceImages.length > 0 ? (
+                    activeDetailDoc.invoiceImages.map((src, i) => (
+                      <div key={`dt-inv-${i}`} className="upload-item shadow-sm">
+                        <img src={src} onClick={() => setPreviewImageSrc(src)} alt="发票" />
+                      </div>
+                    ))
+                  ) : (
+                    <span className="detail-value text-gray-400 font-normal">未上传</span>
+                  )}
+                </div>
+              </div>
+
+            </div>
           </div>
         ) : (
           <div className="content text-center py-20 text-gray-400">单据数据不存在</div>
         )}
 
-        <PrdWrapper id="detail-bottom-bar" className="bottom-bar">
+        <div className="bottom-bar">
           <div className="btn-row">
             <button className="btn-secondary" onClick={() => showToast('已发起打印', 'success')}>打印预收单</button>
             <button className="btn-primary" onClick={() => handleEditInit(activeDetailDoc)}>编辑</button>
           </div>
-        </PrdWrapper>
+        </div>
       </div>
 
       {/* ==================== 模态弹出框与检索面板 ==================== */}
 
       <div className={`unified-overlay ${showUnifiedOverlay ? 'show' : ''}`}>
         <div className="panel-mask" onClick={() => setShowUnifiedOverlay(false)}></div>
-        <PrdWrapper id="search-filter-panel" className="slide-panel">
+        <div className="slide-panel">
           <div className="panel-header">检索与筛选</div>
           <div className="panel-body">
             
@@ -2121,103 +1571,78 @@ function App() {
             <button className="btn-reset" onClick={handleResetFilters}>重置</button>
             <button className="btn-query" onClick={handleApplyFilters}>确定</button>
           </div>
-        </PrdWrapper>
+        </div>
       </div>
 
       {/* ========== 多类型 Action Sheets 选择器面板 ========== */}
 
       {/* 单据类型选择 */}
       <div className={`action-overlay ${activeSheet === 'docTypeSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="doc-type-sheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
+        <div className="action-sheet" onClick={(e) => e.stopPropagation()}>
           <div className="action-sheet-title">选择单据类型</div>
+          <div className="action-item" onClick={() => selectFormDocType('采购订单')}>采购订单</div>
           <div className="action-item" onClick={() => selectFormDocType('采购到货通知单')}>采购到货通知单</div>
           <div className="action-item" onClick={() => selectFormDocType('发货单')}>发货单</div>
           <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
+        </div>
       </div>
 
-      {/* 附件查看 Sheet */}
+      {/* 新增：币种选择下拉 */}
+      <div className={`action-overlay ${activeSheet === 'currencySheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
+        <div className="action-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="action-sheet-title">选择币种</div>
+          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, currency: '人民币 (CNY)' })); setActiveSheet(null); }}>人民币 (CNY)</div>
+          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, currency: '美元 (USD)' })); setActiveSheet(null); }}>美元 (USD)</div>
+          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, currency: '欧元 (EUR)' })); setActiveSheet(null); }}>欧元 (EUR)</div>
+          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, currency: '港币 (HKD)' })); setActiveSheet(null); }}>港币 (HKD)</div>
+          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
+        </div>
+      </div>
+
+      {/* 附件查看独立分类双板块 Preview Modal */}
       <div className={`action-overlay ${activeSheet === 'attachmentSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="attachment-sheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">
-            附件 ({currentAttachmentDoc ? currentAttachmentDoc.attachments.length : 0})
+        <div className="action-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="action-sheet-title border-b border-[var(--border-light)] pb-3">
+            附件 ({currentAttachmentDoc ? ((currentAttachmentDoc.packingImages?.length || 0) + (currentAttachmentDoc.invoiceImages?.length || 0)) : 0})
           </div>
-          <div className="attachment-grid">
-            {currentAttachmentDoc && currentAttachmentDoc.attachments.map((src, i) => (
-              <div key={i} className="attachment-thumb" onClick={() => setPreviewImageSrc(src)}>
-                <img src={src} alt={`附件${i+1}`} />
+          <div className="overflow-y-auto max-h-[60vh] p-4 flex flex-col gap-5">
+            {/* 随货附件展示区 */}
+            {currentAttachmentDoc && currentAttachmentDoc.packingImages?.length > 0 && (
+              <div>
+                <div className="text-[13px] font-bold text-gray-700 mb-2.5 flex items-center gap-1.5">
+                   <div className="w-1 h-3.5 bg-blue-500 rounded-full"></div>随货附件 ({currentAttachmentDoc.packingImages.length})
+                </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {currentAttachmentDoc.packingImages.map((src, i) => (
+                    <div key={`pack-${i}`} className="attachment-thumb m-0" onClick={() => setPreviewImageSrc(src)}>
+                      <img src={src} alt={`随货附件${i+1}`} />
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
+            {/* 发票附件展示区 */}
+            {currentAttachmentDoc && currentAttachmentDoc.invoiceImages?.length > 0 && (
+              <div>
+                <div className="text-[13px] font-bold text-gray-700 mb-2.5 flex items-center gap-1.5">
+                   <div className="w-1 h-3.5 bg-green-500 rounded-full"></div>发票 ({currentAttachmentDoc.invoiceImages.length})
+                </div>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {currentAttachmentDoc.invoiceImages.map((src, i) => (
+                    <div key={`inv-${i}`} className="attachment-thumb m-0" onClick={() => setPreviewImageSrc(src)}>
+                      <img src={src} alt={`发票${i+1}`} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {/* 极端无附件状态防错兜底 */}
+            {currentAttachmentDoc && (!currentAttachmentDoc.packingImages?.length && !currentAttachmentDoc.invoiceImages?.length) && (
+              <div className="text-center text-gray-400 py-6 text-sm">暂无附件信息</div>
+            )}
           </div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 关联单号选择 */}
-      <div className={`action-overlay ${activeSheet === 'refDocSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="refDocSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择关联单号</div>
-          <div className="action-item" onClick={() => selectFormRefDoc('PO20260415001', '上海鑫源贸易', '')}>PO20260415001 - 上海鑫源贸易</div>
-          <div className="action-item" onClick={() => selectFormRefDoc('PO20260416002', '深圳优品供应链', '')}>PO20260416002 - 深圳优品供应链</div>
-          <div className="action-item" onClick={() => selectFormRefDoc('SHD20260422', '', '华南电商一区主发仓')}>SHD20260422 - 华南电商一区主发仓</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 操作人选择 */}
-      <div className={`action-overlay ${activeSheet === 'operatorFormSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="operatorFormSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择操作人</div>
-          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, operator: '张三' })); setActiveSheet(null); }}>张三</div>
-          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, operator: '李四' })); setActiveSheet(null); }}>李四</div>
-          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, operator: '王五' })); setActiveSheet(null); }}>王五</div>
-          <div className="action-item" onClick={() => { setEditForm(prev => ({ ...prev, operator: '赵六' })); setActiveSheet(null); }}>赵六</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 筛选-单据类型 */}
-      <div className={`action-overlay ${activeSheet === 'filterDocTypeSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="filterDocTypeSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择单据类型</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, docType: '采购到货通知单' })); setActiveSheet(null); }}>采购到货通知单</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, docType: '发货单' })); setActiveSheet(null); }}>发货单</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 筛选-发货渠道 */}
-      <div className={`action-overlay ${activeSheet === 'filterChannelSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="filterChannelSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择发货渠道</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, dispatchChannel: '华南电商一区主发仓' })); setActiveSheet(null); }}>华南电商一区主发仓</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, dispatchChannel: '华北中转仓' })); setActiveSheet(null); }}>华北中转仓</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, dispatchChannel: '华东分拨中心' })); setActiveSheet(null); }}>华东分拨中心</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 筛选-供应商 */}
-      <div className={`action-overlay ${activeSheet === 'filterSupplierSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="filterSupplierSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择供应商</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, supplier: '上海鑫源贸易' })); setActiveSheet(null); }}>上海鑫源贸易</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, supplier: '深圳优品供应链' })); setActiveSheet(null); }}>深圳优品供应链</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, supplier: '广州百利达商贸' })); setActiveSheet(null); }}>广州百利达商贸</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
-      </div>
-
-      {/* 筛选-操作人 */}
-      <div className={`action-overlay ${activeSheet === 'filterOperatorSheet' ? 'show' : ''}`} onClick={() => setActiveSheet(null)}>
-        <PrdWrapper id="filterOperatorSheet" className="action-sheet" onClick={(e) => e.stopPropagation()}>
-          <div className="action-sheet-title">选择操作人</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, operator: '张三' })); setActiveSheet(null); }}>张三</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, operator: '李四' })); setActiveSheet(null); }}>李四</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, operator: '王五' })); setActiveSheet(null); }}>王五</div>
-          <div className="action-item" onClick={() => { setTempFilters(prev => ({ ...prev, operator: '赵六' })); setActiveSheet(null); }}>赵六</div>
-          <div className="action-cancel" onClick={() => setActiveSheet(null)}>取消</div>
-        </PrdWrapper>
+          <div className="action-cancel border-t-[8px] border-[var(--bg-subtle)]" onClick={() => setActiveSheet(null)}>关闭</div>
+        </div>
       </div>
 
       {/* Toast 提示框 */}
@@ -2230,7 +1655,6 @@ function App() {
       </div>
 
     </div>
-    </PrdContext.Provider>
   );
 }
 
